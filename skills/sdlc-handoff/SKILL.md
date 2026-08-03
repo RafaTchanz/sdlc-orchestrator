@@ -8,7 +8,7 @@ description: Closes out the current session — reads every docs/sdlc/ artifact 
 ## Contract
 
 - **Input**: none — reads the current `docs/sdlc/` tree and `PROGRESS.md` state.
-- **Output**: an updated `PROGRESS.md` entry (`Done`/`Failed`/`Current State`/`Next`) plus a short recap to the user.
+- **Output**: an updated `PROGRESS.md` entry (`Done`/`Failed`/`Current State`/`Next`/`Metrics`) plus a short recap to the user.
 - **Boundary**: never starts new work — purely closes out the current state for the next session.
 
 ## Steps
