@@ -24,6 +24,13 @@ Lives at the **target repo's root** (not inside `docs/sdlc/`). Read at the start
 
 {the single next action whoever resumes should take}
 
+### Metrics
+
+{lightweight signals, not prose — e.g.:}
+- Rounds used: QA {a}/3, Review {b}/3 (omit either that didn't run this session)
+- Findings by severity: {n} NIT, {n} MINOR, {n} MAJOR, {n} CRITICAL/BLOCKED
+- Gates: cleared {list}; escalated {list, or "none"}
+
 ```
 
 ## Resume convention

@@ -25,6 +25,28 @@ Usable independently of the full lifecycle, each asking for its own explicit con
 - `/sdlc-grill-me` — adversarial re-read of a plan or design document.
 - `/sdlc-handoff` — closes out a session: appends a `PROGRESS.md` entry and recaps.
 
+## Governance & guardrails
+
+Each agent's `.md` file carries its own `## Contract` (Input / Output / Boundary) — the source of truth for what it may read, must produce, and must never touch. A few cross-cutting rules apply to all of them:
+
+- **Signal vocabulary**: every audit/review agent reports one of `APPROVE`, `NIT`, `MINOR`, `MAJOR`, `CRITICAL`, `BLOCKED` — no synonyms, defined once in the design doc's Global Constraints.
+- **Loop cap**: QA and Review each get up to 3 rounds per story, tracked independently. An unresolved `NIT`/`MINOR` at round 3 escalates to `MAJOR` (back to the Coder squad); an unresolved `MAJOR` at round 3 escalates to `CRITICAL`/`BLOCKED` and stops at a human-decision gate. Full routing logic: [`skills/sdlc/references/phases.md`](skills/sdlc/references/phases.md).
+- **State tracking**: no separate state-machine diagram — state lives in the six numbered `[GATE N]` human-approval checkpoints (plus unscheduled escalation gates) combined with `PROGRESS.md`'s `Current State` field, e.g. "story 2.3, QA round 2/3 after a MINOR Tuner fix". Convention, including the lightweight session `Metrics` (rounds used, findings by severity, gates cleared/escalated): [`skills/sdlc/references/progress-file.md`](skills/sdlc/references/progress-file.md).
+- **Least privilege**: every agent's `tools:` frontmatter lists only what that role needs (e.g. `sdlc-qa` has no `Edit`; `sdlc-handoff` has no `Bash`).
+- **Model assignment**: planning/design/validation agents run on Sonnet; the agents that write code (`sdlc-coder` + overlays, `sdlc-tuner`) and `sdlc-devops` run on Opus.
+
+### Responsibility matrix
+
+One agent, one job — no two agents share a write target, and validation is always independent of the write it's checking.
+
+| Phase           | Agents                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| Discover        | `sdlc-analyst`, `sdlc-bug-investigator`                                                         |
+| Decide / plan   | `sdlc-pm`, `sdlc-architect`, `sdlc-scrum-master`                                                |
+| Write           | `sdlc-coder` (+ `-backend`/`-frontend` overlays), `sdlc-tuner`                                  |
+| Validate        | `sdlc-qa`, `sdlc-reviewer`, `sdlc-stress`, `sdlc-verdict`, `sdlc-security`, `sdlc-quality-gate` |
+| Publish / close | `sdlc-pr`, `sdlc-devops`, `sdlc-handoff`                                                        |
+
 ## Layout
 
 ```
