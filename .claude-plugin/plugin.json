@@ -1,0 +1,20 @@
+{
+  "name": "sdlc-orchestrator",
+  "description": "18-agent SDLC pipeline for Claude Code — Analyst -> PM -> Architect -> Scrum Master -> Coder -> QA -> Reviewer -> Stress -> Tuner -> Verdict -> PR -> DevOps, plus a bug-fix flow, a single-task flow, and standalone security-review/quality-gate/pr-review/release/grill-me/handoff skills. Self-contained, no runtime dependency on any other plugin.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Rafa Lorente"
+  },
+  "homepage": "https://github.com/RafaTchanz/sdlc-orchestrator",
+  "repository": "https://github.com/RafaTchanz/sdlc-orchestrator",
+  "license": "MIT",
+  "keywords": [
+    "sdlc",
+    "agents",
+    "skills",
+    "orchestrator",
+    "tdd",
+    "code-review",
+    "pipeline"
+  ]
+}
