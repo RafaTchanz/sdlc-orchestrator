@@ -67,3 +67,5 @@ Copy (or symlink) the contents of `agents/` into `~/.claude/agents/` and `skills
 - [`docs/superpowers/plans/2026-07-30-sdlc-orchestrator.md`](docs/superpowers/plans/2026-07-30-sdlc-orchestrator.md) — the 27-task implementation plan executed to build it.
 - [`docs/superpowers/specs/2026-08-04-slack-notifications-design.md`](docs/superpowers/specs/2026-08-04-slack-notifications-design.md) — opt-in Slack notifications at the 3 planning gates.
 - [`docs/superpowers/plans/2026-08-04-slack-notifications.md`](docs/superpowers/plans/2026-08-04-slack-notifications.md) — the 3-task implementation plan executed to build it.
+- [`docs/superpowers/specs/2026-08-04-slack-notify-project-name-design.md`](docs/superpowers/specs/2026-08-04-slack-notify-project-name-design.md) — optional explicit `project_name` for Slack notifications.
+- [`docs/superpowers/plans/2026-08-04-slack-notify-project-name.md`](docs/superpowers/plans/2026-08-04-slack-notify-project-name.md) — the 3-task implementation plan executed to build it.
