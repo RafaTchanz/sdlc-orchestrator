@@ -20,6 +20,8 @@ Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/product-b
 
 ```
 
+If this session's `project_name` was given at Intake, insert `Project: {session project_name}.` into the prompt above, between the `Channel:` clause and `Notify per your contract.` — otherwise omit it entirely (not an empty clause).
+
 Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning in this session's own narration — never block on it. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and proceed to the gate.
 
 **[GATE 1]** — explicit confirmation before continuing.
@@ -39,6 +41,8 @@ If this session opted into Slack notifications during Intake, dispatch `sdlc-sla
 Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/PRD.md. Hand-off: {sdlc-pm's one-line hand-off}. Channel: {session channel_id}. Notify per your contract.")
 
 ```
+
+If this session's `project_name` was given at Intake, insert `Project: {session project_name}.` into the prompt above, between the `Channel:` clause and `Notify per your contract.` — otherwise omit it entirely (not an empty clause).
 
 Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it. If the dispatch itself fails or returns no hand-off at all, treat that identically: log a non-fatal warning and proceed to the gate.
 
@@ -61,6 +65,8 @@ If this session opted into Slack notifications during Intake, dispatch `sdlc-sla
 Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/architecture.md. Hand-off: {sdlc-architect's one-line hand-off}. Channel: {session channel_id}. Notify per your contract.")
 
 ```
+
+If this session's `project_name` was given at Intake, insert `Project: {session project_name}.` into the prompt above, between the `Channel:` clause and `Notify per your contract.` — otherwise omit it entirely (not an empty clause).
 
 Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it. If the dispatch itself fails or returns no hand-off at all, treat that identically: log a non-fatal warning and proceed to the gate.
 

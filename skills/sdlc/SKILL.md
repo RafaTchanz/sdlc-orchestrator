@@ -17,7 +17,7 @@ Drives a project from idea to release by dispatching one isolated sub-agent per 
 
 Full phase-by-phase dispatch prompts and routing logic: `references/phases.md`. Summary:
 
-1. **Intake** — confirm idea/scope with the user; skip to step 2 if `docs/sdlc/product-brief.md` already exists (resume mid-pipeline). Regardless of fresh-start or resume, also ask once per session: _"Quer notificar o squad no Slack a cada gate de planejamento nesta sessão? Se sim, qual o channel_id?"_ Hold the answer (opted in yes/no, and `channel_id` if yes) only in this session's running context — never write it to any file.
+1. **Intake** — confirm idea/scope with the user; skip to step 2 if `docs/sdlc/product-brief.md` already exists (resume mid-pipeline). Regardless of fresh-start or resume, also ask once per session: _"Quer notificar o squad no Slack a cada gate de planejamento nesta sessão? Se sim, qual o channel_id, e qual o nome do projeto (opcional, para identificar as notificações)?"_ Hold the answer (opted in yes/no, `channel_id` if yes, and `project_name` if given) only in this session's running context — never write it to any file.
 2. Dispatch `sdlc-analyst` → `product-brief.md` → if this session opted in, dispatch `sdlc-slack-notify` → **[GATE 1]**.
 3. Dispatch `sdlc-pm` with the Brief → `PRD.md` → if this session opted in, dispatch `sdlc-slack-notify` → **[GATE 2]**.
 4. Dispatch `sdlc-architect` with Brief+PRD → `architecture.md` + `epic-manifest.md`; run `/sdlc-grill-me` against `architecture.md` → if this session opted in, dispatch `sdlc-slack-notify` on `architecture.md` → **[GATE 3]**.
