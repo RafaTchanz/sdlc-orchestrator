@@ -10,7 +10,19 @@ Agent(subagent_type: "sdlc-analyst", prompt: "Idea: {user's raw idea/feature des
 
 ```
 
-On return: read `docs/sdlc/product-brief.md`, present it to the user, **[GATE 1]** — explicit confirmation before continuing.
+On return: read `docs/sdlc/product-brief.md`, present it to the user.
+
+If this session opted into Slack notifications during Intake, dispatch `sdlc-slack-notify` now — before the human gate, so the squad reviews concurrently with the coordinator:
+
+```
+
+Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/product-brief.md. Hand-off: {sdlc-analyst's one-line hand-off}. Channel: {session channel_id}. Notify per your contract.")
+
+```
+
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning in this session's own narration — never block on it. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and proceed to the gate.
+
+**[GATE 1]** — explicit confirmation before continuing.
 
 ## Step 3 — PM
 
@@ -20,7 +32,17 @@ Agent(subagent_type: "sdlc-pm", prompt: "Approved brief at docs/sdlc/product-bri
 
 ```
 
-**[GATE 2]** on the PRD, same pattern.
+If this session opted into Slack notifications during Intake, dispatch `sdlc-slack-notify` now, same pattern as Step 2:
+
+```
+
+Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/PRD.md. Hand-off: {sdlc-pm's one-line hand-off}. Channel: {session channel_id}. Notify per your contract.")
+
+```
+
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it. If the dispatch itself fails or returns no hand-off at all, treat that identically: log a non-fatal warning and proceed to the gate.
+
+**[GATE 2]** on the PRD, same confirmation pattern as Step 2.
 
 ## Step 4 — Architect + grill-me
 
@@ -30,7 +52,19 @@ Agent(subagent_type: "sdlc-architect", prompt: "Approved brief (docs/sdlc/produc
 
 ```
 
-Then invoke the `sdlc-grill-me` skill against `docs/sdlc/architecture.md` before the gate. **[GATE 3]** on architecture + manifest together.
+Then invoke the `sdlc-grill-me` skill against `docs/sdlc/architecture.md` before the gate.
+
+If this session opted into Slack notifications during Intake, dispatch `sdlc-slack-notify` now, after `grill-me` has resolved:
+
+```
+
+Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/architecture.md. Hand-off: {sdlc-architect's one-line hand-off}. Channel: {session channel_id}. Notify per your contract.")
+
+```
+
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it. If the dispatch itself fails or returns no hand-off at all, treat that identically: log a non-fatal warning and proceed to the gate.
+
+**[GATE 3]** on architecture + manifest together.
 
 ## Step 5 — Epic loop
 

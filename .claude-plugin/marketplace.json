@@ -4,12 +4,12 @@
     "name": "Rafa Lorente",
     "url": "https://github.com/RafaTchanz"
   },
-  "description": "Marketplace for the sdlc-orchestrator plugin — an 18-agent SDLC pipeline for Claude Code.",
+  "description": "Marketplace for the sdlc-orchestrator plugin — an 19-agent SDLC pipeline for Claude Code.",
   "plugins": [
     {
       "name": "sdlc-orchestrator",
       "source": "./",
-      "description": "18-agent SDLC pipeline for Claude Code — Analyst -> PM -> Architect -> Scrum Master -> Coder -> QA -> Reviewer -> Stress -> Tuner -> Verdict -> PR -> DevOps, plus a bug-fix flow, a single-task flow, and standalone security-review/quality-gate/pr-review/release/grill-me/handoff skills."
+      "description": "19-agent SDLC pipeline for Claude Code — Analyst -> PM -> Architect -> Scrum Master -> Coder -> QA -> Reviewer -> Stress -> Tuner -> Verdict -> PR -> DevOps, plus a bug-fix flow, a single-task flow, and standalone security-review/quality-gate/pr-review/release/grill-me/handoff skills."
     }
   ]
 }

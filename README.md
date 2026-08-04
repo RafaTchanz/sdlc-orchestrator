@@ -1,6 +1,6 @@
 # sdlc-orchestrator
 
-A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 18 single-purpose agent personas, driven by 9 skills.
+A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 19 single-purpose agent personas, driven by 9 skills.
 
 Built from scratch. No runtime dependency on any other installed plugin (content inspiration only, all prose original).
 
@@ -46,11 +46,12 @@ One agent, one job — no two agents share a write target, and validation is alw
 | Write           | `sdlc-coder` (+ `-backend`/`-frontend` overlays), `sdlc-tuner`                                  |
 | Validate        | `sdlc-qa`, `sdlc-reviewer`, `sdlc-stress`, `sdlc-verdict`, `sdlc-security`, `sdlc-quality-gate` |
 | Publish / close | `sdlc-pr`, `sdlc-devops`, `sdlc-handoff`                                                        |
+| Notify          | `sdlc-slack-notify`                                                                             |
 
 ## Layout
 
 ```
-agents/    18 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
+agents/    19 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
 skills/    9 skills (sdlc, sdlc-bug-fix, sdlc-task, sdlc-security-review, sdlc-quality-gate,
            sdlc-pr-review, sdlc-release, sdlc-grill-me, sdlc-handoff)
 docs/      design doc + implementation plan this was built from
@@ -64,3 +65,5 @@ Copy (or symlink) the contents of `agents/` into `~/.claude/agents/` and `skills
 
 - [`docs/2026-07-29-sdlc-orchestrator-design.md`](docs/2026-07-29-sdlc-orchestrator-design.md) — the approved design.
 - [`docs/superpowers/plans/2026-07-30-sdlc-orchestrator.md`](docs/superpowers/plans/2026-07-30-sdlc-orchestrator.md) — the 27-task implementation plan executed to build it.
+- [`docs/superpowers/specs/2026-08-04-slack-notifications-design.md`](docs/superpowers/specs/2026-08-04-slack-notifications-design.md) — opt-in Slack notifications at the 3 planning gates.
+- [`docs/superpowers/plans/2026-08-04-slack-notifications.md`](docs/superpowers/plans/2026-08-04-slack-notifications.md) — the 3-task implementation plan executed to build it.
