@@ -1,7 +1,7 @@
 # Slack Notifications for Planning Gates — Design
 
 **Date**: 2026-08-04
-**Status**: Approved by user, pending implementation plan
+**Status**: Implemented (`agents/sdlc-slack-notify.md`, `skills/sdlc/SKILL.md`, `skills/sdlc/references/phases.md`) — see `docs/superpowers/plans/2026-08-04-slack-notifications.md`.
 
 ## 1. Motivation
 
