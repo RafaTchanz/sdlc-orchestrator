@@ -20,7 +20,7 @@ Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/product-b
 
 ```
 
-Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning in this session's own narration — never block on it.
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning in this session's own narration — never block on it. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and proceed to the gate.
 
 **[GATE 1]** — explicit confirmation before continuing.
 
@@ -40,7 +40,7 @@ Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/PRD.md. H
 
 ```
 
-Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it.
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it. If the dispatch itself fails or returns no hand-off at all, treat that identically: log a non-fatal warning and proceed to the gate.
 
 **[GATE 2]** on the PRD, same confirmation pattern as Step 2.
 
@@ -62,7 +62,7 @@ Agent(subagent_type: "sdlc-slack-notify", prompt: "Artifact: docs/sdlc/architect
 
 ```
 
-Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it.
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block on it. If the dispatch itself fails or returns no hand-off at all, treat that identically: log a non-fatal warning and proceed to the gate.
 
 **[GATE 3]** on architecture + manifest together.
 
