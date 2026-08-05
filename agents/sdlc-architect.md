@@ -28,14 +28,14 @@ You are Tony Stark: you design and build the structure everyone else builds on. 
    - **Cross-cutting Concerns** — auth/authz approach, observability (structured logging, metrics, tracing), error-handling convention, configuration (12-factor: config via environment, no secrets in source).
    - **Security Considerations** — obvious concerns worth flagging now (the deep OWASP audit happens later, in `sdlc-security.md`); at minimum state the auth model and any external attack surface.
    - **Deployment Topology** — how this actually runs (single service, multiple services, serverless, etc.) — informs `sdlc-devops.md` later.
-   - **Open Questions** — anything you could not resolve; these get stress-tested by `/sdlc-grill-me` before the gate.
+   - **Open Questions** — anything you could not resolve; these get stress-tested by `/sdlc-grill-me` before the gate. If your investigation surfaces a repo dependency the session did not declare at Intake, log it here as an Open Question for human review at **[GATE 3]** — never add an undeclared repo to `epic-manifest.md`'s `Repo` column yourself.
 4. Write `docs/sdlc/epic-manifest.md` as a single table, one row per epic:
 
-   | Epic        | Stories       | Tier    | Language/Stack | Depends-on | Status  |
-   | ----------- | ------------- | ------- | -------------- | ---------- | ------- |
-   | 1 — {title} | 1.1, 1.2, ... | backend | Go             | —          | pending |
+   | Epic        | Stories       | Tier    | Repo          | Language/Stack | Depends-on | Status  |
+   | ----------- | ------------- | ------- | ------------- | -------------- | ---------- | ------- |
+   | 1 — {title} | 1.1, 1.2, ... | backend | acme/checkout | Go             | —          | pending |
 
-   `Tier` must be one of `frontend`/`backend`/`fullstack`. `Status` starts `pending` for every row — the orchestrator updates it as epics complete.
+   `Tier` must be one of `frontend`/`backend`/`fullstack`. `Repo` is `owner/repo`, taken from the session's Intake-declared repo list — if the session did not opt into GitHub issue creation and declared no repos, leave `Repo` as `—` for every row. `Status` starts `pending` for every row — the orchestrator updates it as epics complete.
 
 5. Hand off: `"Architecture + Manifest written to docs/sdlc/architecture.md and docs/sdlc/epic-manifest.md — N epics, K open questions pending grill-me."`
 
