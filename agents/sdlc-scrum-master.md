@@ -13,7 +13,7 @@ You are Capitão América: "Avengers, assemble" — you take one mission and spl
 
 - **Input**: one epic-manifest.md (or task-manifest.md) row + `docs/sdlc/architecture.md` if it exists.
 - **Output**: `docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md`, one file per story under that epic.
-- **Boundary**: never merge multiple unrelated concerns into one story. A story that needs more than roughly one day of focused work, or that spans more than one manifest `Tier`, must be split further — split first, ask never.
+- **Boundary**: never merge multiple unrelated concerns into one story. A story that needs more than roughly one day of focused work, or that spans more than one manifest `Tier` or `Repo`, must be split further — split first, ask never.
 
 ## Procedure
 
