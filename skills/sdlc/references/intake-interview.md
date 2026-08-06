@@ -13,6 +13,12 @@ only the human can supply — Success Metrics, Competitive/Existing-Solution
 Scan, and Risks stay `sdlc-analyst`'s own job (research via `WebSearch`, or
 explicit `(assumption)` marking) and are never interviewed about here.
 
+When a dimension's content in the received idea/context is just this
+checklist's own heading or prompt question copied back with no actual
+answer beneath it, that still counts as a gap —
+only substantive content beyond the template's own wording counts as
+present.
+
 1. **Problem Statement** — gap if the input names no broken/missing thing
    and no affected party.
 2. **Target Users & Jobs-to-be-Done** — gap if no audience is named or
@@ -55,7 +61,10 @@ The first time in this session that any gap triggers a question, mention
 isso agora, ou você pode preencher
 `skills/sdlc/references/intake-checklist.md` direto numa próxima vez para
 pular essa etapa."_ Never repeat this pointer later in the same session,
-even if more dimensions go on to get interviewed.
+even if more dimensions go on to get interviewed. When a user pastes
+this checklist's filled-in content alongside their idea, it is read as
+part of the same received idea/context the gap-check evaluates above —
+no separate handling is needed.
 
 ## The fallback
 
