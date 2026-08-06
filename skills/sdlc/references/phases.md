@@ -6,7 +6,7 @@ Each dispatch below is a call shape: `Agent(subagent_type: "sdlc-...", prompt: "
 
 ```
 
-Agent(subagent_type: "sdlc-analyst", prompt: "Idea: {user's raw idea/feature description}. Existing repo context: {summary if any}. Write docs/sdlc/product-brief.md per your contract.")
+Agent(subagent_type: "sdlc-analyst", prompt: "Idea: {original input, gap-filled with any interview answers}. Assumptions still open: {any dimension left unresolved after its cap, phrased as 'user did not specify X' — omit this sentence entirely if no gap went unresolved}. Existing repo context: {summary if any}. Write docs/sdlc/product-brief.md per your contract.")
 
 ```
 
