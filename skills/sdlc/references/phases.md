@@ -94,7 +94,7 @@ Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: doc
 
 ```
 
-Read its hand-off; note any warnings as non-fatal — never block on it, and never delay 5b waiting on it.
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
 
 **5b — Coder squad** (per story; tier overlay chosen from the row's `Tier` column — `backend`→`sdlc-coder-backend`, `frontend`→`sdlc-coder-frontend`, `fullstack`→ dispatch both overlays' guidance in one prompt alongside the core)
 
