@@ -51,9 +51,9 @@ at all.
 ## The reusable checklist pointer
 
 The first time in this session that any gap triggers a question, mention
-`docs/sdlc/references/intake-checklist.md` once: _"posso perguntar sobre
+`skills/sdlc/references/intake-checklist.md` once: _"posso perguntar sobre
 isso agora, ou você pode preencher
-`docs/sdlc/references/intake-checklist.md` direto numa próxima vez para
+`skills/sdlc/references/intake-checklist.md` direto numa próxima vez para
 pular essa etapa."_ Never repeat this pointer later in the same session,
 even if more dimensions go on to get interviewed.
 
