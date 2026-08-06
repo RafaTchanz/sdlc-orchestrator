@@ -86,6 +86,16 @@ Agent(subagent_type: "sdlc-scrum-master", prompt: "Epic manifest row: {row}. Arc
 
 ```
 
+If this session opted into GitHub issue creation during Intake, dispatch `sdlc-github-issue` now, once for this epic:
+
+```
+
+Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: docs/sdlc/epics/epic-{n}/stories/. Target repo: {this epic's manifest Repo value}. Board: {session board owner}/{session board number}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Create issues per your contract.")
+
+```
+
+Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
+
 **5b — Coder squad** (per story; tier overlay chosen from the row's `Tier` column — `backend`→`sdlc-coder-backend`, `frontend`→`sdlc-coder-frontend`, `fullstack`→ dispatch both overlays' guidance in one prompt alongside the core)
 
 ```
