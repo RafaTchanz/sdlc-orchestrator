@@ -16,7 +16,7 @@ description: Runs a single small task or feature through the same TDD/QA/Review/
 Full loop content: `references/loop.md`. Summary:
 
 1. Dispatch `sdlc-architect` in light mode → `docs/sdlc/task-manifest.md` → **[GATE]**.
-2. Single-story loop (same shape as `/sdlc`'s epic-loop step 5, run exactly once) → **[GATE]** before commit.
+2. Single-story loop (same shape as `/sdlc`'s story-loop step 5, run exactly once) → **[GATE]** before merge.
 3. Continue at `/sdlc`'s step 6 (Security Review onward).
 
 **Done when**: the single story's `verdict.md` clears its gate and the trunk's remaining steps have been handed off to.

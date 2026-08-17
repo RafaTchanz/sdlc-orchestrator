@@ -4,11 +4,13 @@
 
 Kebab-case the bug's short title: lowercase, spaces/punctuation → `-`, strip anything not `[a-z0-9-]`, collapse repeated `-`. Example: `"Login button double-submits on slow network"` → `login-button-double-submits-on-slow-network`. If a `docs/sdlc/bugs/{slug}/` already exists for a materially different bug, append `-2`, `-3`, etc.
 
+Before step 1, create the dedicated branch: `bugfix-{slug}-work` off the session's base branch. Every step below — Investigator through the Gate-5 merge — operates on this branch; state it in each code-touching dispatch's prompt so the sub-agent operates there, never on the base branch.
+
 ## Step 1 — Investigator
 
 ```
 
-Agent(subagent_type: "sdlc-bug-investigator", prompt: "Bug: {description}. Repro steps: {steps}. Diagnose and write docs/sdlc/bugs/{slug}/investigation.md, then commit a failing RED test, per your contract.")
+Agent(subagent_type: "sdlc-bug-investigator", prompt: "Bug: {description}. Repro steps: {steps}. Branch: bugfix-{slug}-work — operate there, not on the base branch. Diagnose and write docs/sdlc/bugs/{slug}/investigation.md, then commit a failing RED test, per your contract.")
 
 ```
 
@@ -16,7 +18,7 @@ Agent(subagent_type: "sdlc-bug-investigator", prompt: "Bug: {description}. Repro
 
 ```
 
-Agent(subagent_type: "sdlc-coder", prompt: "Root cause + RED test: docs/sdlc/bugs/{slug}/investigation.md. Tier overlay: {inferred from affected surface area}. Fix per your TDD contract — RED is already written, drive it to GREEN with the minimum change.")
+Agent(subagent_type: "sdlc-coder", prompt: "Root cause + RED test: docs/sdlc/bugs/{slug}/investigation.md. Tier overlay: {inferred from affected surface area}. Branch: bugfix-{slug}-work — operate there, not on the base branch. Fix per your TDD contract — RED is already written, drive it to GREEN with the minimum change.")
 
 ```
 
@@ -30,14 +32,28 @@ Agent(subagent_type: "sdlc-qa", prompt: "Bug fix for '{slug}', just implemented.
 
 Routing identical to the `/sdlc` skill's step 5c (`references/phases.md` in the `sdlc` skill) — reuse that logic, this file doesn't repeat it.
 
-## Step 4 — Reviewer
+## Step 4 — Review + Stress in parallel
 
 ```
 
+parallel:
 Agent(subagent_type: "sdlc-reviewer", prompt: "Bug fix for '{slug}'. Review per your contract. Write docs/sdlc/bugs/{slug}/review.md.")
+Agent(subagent_type: "sdlc-stress", prompt: "Bug fix for '{slug}'. Stress-test per your contract. Write docs/sdlc/bugs/{slug}/stress.md.")
 
 ```
 
-## Step 5 — Rejoin trunk
+Routing identical to the `/sdlc` skill's step 5d — worse of the two signals — reuse that logic, this file doesn't repeat it.
+
+## Step 5 — Verdict
+
+```
+
+Agent(subagent_type: "sdlc-verdict", prompt: "Bug fix for '{slug}'. Aggregate docs/sdlc/bugs/{slug}/{qa,review,stress}.md per your contract.")
+
+```
+
+**[GATE]** before merge — present the verdict to the human. On confirmation: merge `bugfix-{slug}-work` into the session's base branch, then delete the branch. On rejection/rework, stay on the branch — no merge — and loop back to whichever step the human directs.
+
+## Step 6 — Rejoin trunk
 
 Invoke `/sdlc`'s own step 6 onward (Security + Quality Gate → PR gate → Release gate → Handoff), pointing it at this bug-fix branch/diff instead of an epic's diff.

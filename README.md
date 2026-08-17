@@ -9,7 +9,7 @@ Built from scratch. No runtime dependency on any other installed plugin (content
 Three ways in, all converging on a common trunk (security review → quality gate → PR → release → handoff):
 
 - **`/sdlc`** — greenfield: full brief → PRD → architecture → epics/stories → coding loop.
-- **`/sdlc-bug-fix`** — root-cause investigation (failing test first) → fix → same QA/review path, joins the trunk at security review.
+- **`/sdlc-bug-fix`** — root-cause investigation (failing test first) → fix, on its own `bugfix-{slug}-work` branch → same QA/review/stress/verdict path as `/sdlc`, joins the trunk at security review.
 - **`/sdlc-task`** — a single well-scoped task, skipping brief/PRD, with a lightweight architecture pass.
 
 Every phase writes its output as a Markdown artifact under `docs/sdlc/` in the target repo, and every major transition is a human-approval gate (`[GATE]`) that the pipeline never auto-advances past.
@@ -69,3 +69,5 @@ Copy (or symlink) the contents of `agents/` into `~/.claude/agents/` and `skills
 - [`docs/superpowers/plans/2026-08-04-slack-notifications.md`](docs/superpowers/plans/2026-08-04-slack-notifications.md) — the 3-task implementation plan executed to build it.
 - [`docs/superpowers/specs/2026-08-04-slack-notify-project-name-design.md`](docs/superpowers/specs/2026-08-04-slack-notify-project-name-design.md) — optional explicit `project_name` for Slack notifications.
 - [`docs/superpowers/plans/2026-08-04-slack-notify-project-name.md`](docs/superpowers/plans/2026-08-04-slack-notify-project-name.md) — the 3-task implementation plan executed to build it.
+- [`docs/superpowers/specs/2026-08-17-p0-orchestrator-fixes-design.md`](docs/superpowers/specs/2026-08-17-p0-orchestrator-fixes-design.md) — fixes for the four load-bearing `/sdlc` bugs found by a static, `sdlc-grill-me`-driven audit.
+- [`docs/superpowers/plans/2026-08-17-p0-orchestrator-fixes.md`](docs/superpowers/plans/2026-08-17-p0-orchestrator-fixes.md) — the 10-task implementation plan executed to build it.

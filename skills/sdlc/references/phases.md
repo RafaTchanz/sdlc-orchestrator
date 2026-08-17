@@ -72,29 +72,31 @@ Read its hand-off; if it reports a partial or total failure, note that as a non-
 
 **[GATE 3]** on architecture + manifest together.
 
-## Step 5 — Epic loop
+## Step 5 — Story loop
 
-For each `pending` row in `epic-manifest.md`, in row order (respecting `Depends-on`):
+For each `pending` row in `epic-manifest.md`, in row order (respecting `Depends-on`) — each row is exactly one story:
 
-If this session is working multiple epics that could touch overlapping files (per Global Constraints' workspace-isolation rule), create an isolated `git worktree`/branch for this epic in the target repo now, before 5a begins — e.g. `git worktree add ../epic-{n} -b epic-{n}-work`. A single-epic session, or a `/sdlc` run with only one `pending` row, skips this. Track each epic's own QA-loop and Review-loop round counters here too — both reset to 0 at the start of every new story, per the Loop cap & escalation rule in Global Constraints.
+Before 5a begins, create a dedicated branch for this story off the session's base branch: `git checkout -b story-{n.m}-work`. Every dispatch for this story (5a's Coder squad through 5e's gate) operates on this branch. This is the default for every story, single-epic or multi-epic alike.
+
+If this session is additionally working multiple epics that could touch overlapping files (per Global Constraints' workspace-isolation rule), create an isolated `git worktree` for this epic in the target repo now too, before the first story's branch is created — e.g. `git worktree add ../epic-{n} -b epic-{n}-work` — and create each story's `story-{n.m}-work` branch inside that worktree rather than the main checkout. A single-epic session skips this; the per-story branch above still applies. Track each story's own QA-loop and Review-loop round counters here too — both reset to 0 at the start of every new story, per the Loop cap & escalation rule in Global Constraints.
 
 **5a — Scrum Master**
 
 ```
 
-Agent(subagent_type: "sdlc-scrum-master", prompt: "Epic manifest row: {row}. Architecture: docs/sdlc/architecture.md. Write one story file per task under docs/sdlc/epics/epic-{n}/stories/.")
+Agent(subagent_type: "sdlc-scrum-master", prompt: "Epic manifest row: {row}. PRD story {n.m}: {this story's ID/Title/Description/ACs/Priority excerpt from docs/sdlc/PRD.md — full-mode sessions only, omit this clause in light mode}. Architecture: docs/sdlc/architecture.md. Write the story file at docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md.")
 
 ```
 
-If this session opted into GitHub issue creation during Intake, dispatch `sdlc-github-issue` now, once for this epic:
+If this session opted into GitHub issue creation during Intake, dispatch `sdlc-github-issue` now, once for this story, right after this story's Scrum Master dispatch:
 
 ```
 
-Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: docs/sdlc/epics/epic-{n}/stories/. Target repo: {this epic's manifest Repo value}. Board: {session board owner}/{session board number}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Create issues per your contract.")
+Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: docs/sdlc/epics/epic-{n}/stories/. Target repo: {this row's manifest Repo value}. Board: {session board owner}/{session board number}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Create issues per your contract.")
 
 ```
 
-Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
+`sdlc-github-issue` dedups per-story via each story file's own `**GitHub Issue**:` marker line, so calling it once per story against the same epic directory is safe — it only ever creates the one new Issue for the story just written. Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
 
 **5b — Coder squad** (per story; tier overlay chosen from the row's `Tier` column — `backend`→`sdlc-coder-backend`, `frontend`→`sdlc-coder-frontend`, `fullstack`→ dispatch both overlays' guidance in one prompt alongside the core)
 
@@ -104,7 +106,7 @@ Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-{n}/stor
 
 ```
 
-Note: Claude Code loads exactly one `subagent_type` per `Agent` call — for a `fullstack`-tier story, dispatch `sdlc-coder` with both overlay files' content concatenated into the prompt (read them with `Read` first), since the overlays are prose guidance, not separate runtime agents that can be composed automatically. If this epic has an isolated worktree (see the note before 5a), every Coder-squad, Tuner, and gate-commit action for this epic happens inside that worktree — dispatch prompts should state the worktree path so the sub-agent operates there, not on the main checkout.
+Note: Claude Code loads exactly one `subagent_type` per `Agent` call — for a `fullstack`-tier story, dispatch `sdlc-coder` with both overlay files' content concatenated into the prompt (read them with `Read` first), since the overlays are prose guidance, not separate runtime agents that can be composed automatically. Every Coder-squad, Tuner, and gate-merge action for this story happens on its `story-{n.m}-work` branch (see the note before 5a) — dispatch prompts should state that branch so the sub-agent operates there, never on the base branch. If this epic also has an isolated worktree for the multi-epic-concurrency case, that branch lives inside the worktree; state the worktree path too so the sub-agent operates there, not on the main checkout.
 
 **5c — QA, with Tuner routing (round-capped at 3, this story's own QA counter)**
 
@@ -122,7 +124,7 @@ Read the signal from `qa.md`, and increment this story's QA-round counter each t
 - `MAJOR`, round < 3 → re-dispatch the Coder squad (5b) with the finding included in the prompt, then re-run 5c (round + 1).
 - `MAJOR`, round = 3 and still open, or `CRITICAL`/`BLOCKED` at any round → stop, escalate to the human with the finding, **[GATE]** (unscheduled — this is the "escalate" gate from design §3, distinct from the six numbered gates).
 
-**5d — Review + Stress in parallel, with Tuner routing on Review only (round-capped at 3, this story's own Review counter — independent of 5c's QA counter)**
+**5d — Review + Stress in parallel, with Tuner routing on the worse of the two signals (round-capped at 3, this story's own Review/Stress counter — independent of 5c's QA counter)**
 
 ```
 
@@ -132,12 +134,12 @@ Agent(subagent_type: "sdlc-stress", prompt: "Story {n.m}. Stress-test per your c
 
 ```
 
-Read Review's signal (design §4 step 5d routes on Odin's/Review's findings specifically), and increment this story's Review-round counter each time this step runs after round 1:
+Read both Review's and Stress's signals and take the worse of the two (`CRITICAL`/`BLOCKED` > `MAJOR` > `MINOR`/`NIT` > `APPROVE`), incrementing this story's Review/Stress-round counter each time this step runs after round 1:
 
-- `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present, dispatch `sdlc-tuner` on each, then re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1) (Stress's findings from this round still apply unless Stress itself also only had `NIT`/`MINOR`, in which case just re-run Stress to confirm the Tuner's fix didn't regress resilience).
-- `NIT`/`MINOR` only, round = 3 and still open → reclassify `MAJOR` and fall through to the branch below instead of dispatching `sdlc-tuner` again.
-- `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b), then re-run 5c and 5d from the top for this story (round + 1).
-- `MAJOR`/`CRITICAL`, round = 3 and still open → reclassify `CRITICAL`/`BLOCKED` (if not already) and stop, escalate to the human, **[GATE]** (unscheduled — same escalation gate as 5c's).
+- Worse-of-the-two is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in either report), dispatch `sdlc-tuner` on each, then re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1).
+- Worse-of-the-two is `NIT`/`MINOR` only, round = 3 and still open → reclassify `MAJOR` and fall through to the branch below instead of dispatching `sdlc-tuner` again.
+- Worse-of-the-two is `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b), then re-run 5c and 5d from the top for this story (round + 1).
+- Worse-of-the-two is `MAJOR`/`CRITICAL`, round = 3 and still open → reclassify `CRITICAL`/`BLOCKED` (if not already) and stop, escalate to the human, **[GATE]** (unscheduled — same escalation gate as 5c's).
 
 **5e — Verdict**
 
@@ -147,9 +149,9 @@ Agent(subagent_type: "sdlc-verdict", prompt: "Story {n.m}. Aggregate docs/sdlc/e
 
 ```
 
-**[GATE 4]** — present the verdict to the human before committing. On confirmation, the Coder squad's own commit (made during 5b) stands as the story's commit; nothing further to commit here since `sdlc-coder` already committed in the target repo during implementation.
+**[GATE 4]** — present the verdict to the human before merge. On confirmation, merge `story-{n.m}-work` into the session's base branch, then delete the branch. On rejection/rework, stay on `story-{n.m}-work` — no merge — and loop back to whichever step the human directs.
 
-Update the manifest row's `Status` to `done` once the story's verdict gate clears; move to the next `pending` row.
+Update the manifest row's `Status` to `done` once the story's verdict gate clears and the merge lands; move to the next `pending` row.
 
 ## Step 6 — Security + Quality Gate (parallel, independent)
 
