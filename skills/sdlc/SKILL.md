@@ -21,12 +21,12 @@ Full phase-by-phase dispatch prompts and routing logic: `references/phases.md`. 
 2. Dispatch `sdlc-analyst` → `product-brief.md` → if this session opted in, dispatch `sdlc-slack-notify` → **[GATE 1]**.
 3. Dispatch `sdlc-pm` with the Brief → `PRD.md` → if this session opted in, dispatch `sdlc-slack-notify` → **[GATE 2]**.
 4. Dispatch `sdlc-architect` with Brief+PRD → `architecture.md` + `epic-manifest.md`; run `/sdlc-grill-me` against `architecture.md` → if this session opted in, dispatch `sdlc-slack-notify` on `architecture.md` → **[GATE 3]**.
-5. **Epic loop** (repeat per `pending` row in the manifest) — full routing table in `references/phases.md`:
-   - a. `sdlc-scrum-master` → story files for this epic; if this session opted into GitHub issue creation at Intake, dispatch `sdlc-github-issue` now for this epic (non-blocking — full dispatch shape in `references/phases.md`).
-   - b. Per story: Coder squad (`sdlc-coder` + tier overlay) → TDD implementation.
+5. **Story loop** (repeat per `pending` row in the manifest — each row is exactly one story) — full routing table in `references/phases.md`:
+   - a. Create the dedicated `story-{n.m}-work` branch for this story, then dispatch `sdlc-scrum-master` (manifest row + this story's PRD excerpt + architecture.md) → one story file; if this session opted into GitHub issue creation at Intake, dispatch `sdlc-github-issue` now for this story (non-blocking — full dispatch shape in `references/phases.md`).
+   - b. Coder squad (`sdlc-coder` + tier overlay) → TDD implementation on `story-{n.m}-work`.
    - c. `sdlc-qa` → route on signal (`APPROVE` → d; `NIT`/`MINOR` → `sdlc-tuner` then re-run `sdlc-qa`; `MAJOR` → back to (b); `CRITICAL`/`BLOCKED` → escalate, **[GATE]**).
-   - d. `sdlc-reviewer` + `sdlc-stress` in parallel → route on Review's signal only (`APPROVE`/clean → e; `NIT`/`MINOR`-only → `sdlc-tuner` then re-run both; `MAJOR`/`CRITICAL` → back to (b)).
-   - e. `sdlc-verdict` → **[GATE 4]** before commit.
+   - d. `sdlc-reviewer` + `sdlc-stress` in parallel → route on the worse of the two signals (`APPROVE`/clean on both → e; `NIT`/`MINOR`-only on the worse → `sdlc-tuner` then re-run both; `MAJOR`/`CRITICAL` on either → back to (b)).
+   - e. `sdlc-verdict` → **[GATE 4]** before merge — on confirmation, merge `story-{n.m}-work` into the base branch and delete it.
 6. Dispatch `sdlc-security` and `sdlc-quality-gate` over the full diff (can run in parallel — independent, read-only, no shared state).
 7. **[GATE 5]** → dispatch `sdlc-pr` to open the PR.
 8. **[GATE 6]** → dispatch `sdlc-devops` (release half).
