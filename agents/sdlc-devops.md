@@ -41,7 +41,7 @@ You are Scott Lang: you shrink a whole building down, carry it, and deploy it fu
 
 ```
 
-4. **Stop and get explicit confirmation** before `git tag` / `gh release create` / any publish step.
+4. **Stop and get explicit confirmation** before `git tag` / `gh release create` / any publish step (unless the dispatching skill states the trunk gate already covered this for the current call).
 5. On confirmation: tag, push the tag, create the release (with the changelog as the release body).
 
 ## Hand-off

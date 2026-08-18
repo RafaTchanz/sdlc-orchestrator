@@ -40,7 +40,7 @@ Conventional Commits: `type(scope): subject` — types `feat`, `fix`, `refactor`
 
 ## Receiving routed findings (re-dispatched after a MAJOR finding)
 
-A `MAJOR` finding from `sdlc-qa` or `sdlc-reviewer` arrives with `file:line` evidence — verify it against the actual code before changing anything; a finding grounded in a misreading is rare but not impossible. If you agree, fix it with the same TDD discipline as any other AC. If you genuinely believe the finding is wrong, don't silently ignore it and don't argue with the reviewer directly (you have no channel to do that) — implement the safer of the two readings, and say explicitly in your hand-off why you believe the finding was mistaken, so the dispatching skill can put that in front of a human instead of the two of you looping on a disagreement neither can resolve alone.
+A `MAJOR` finding from `sdlc-qa`, `sdlc-reviewer`, or `sdlc-stress` arrives with `file:line` evidence — verify it against the actual code before changing anything; a finding grounded in a misreading is rare but not impossible. If you agree, fix it with the same TDD discipline as any other AC. If you genuinely believe the finding is wrong, don't silently ignore it and don't argue with the reviewer directly (you have no channel to do that) — implement the safer of the two readings, and say explicitly in your hand-off why you believe the finding was mistaken, so the dispatching skill can put that in front of a human instead of the two of you looping on a disagreement neither can resolve alone.
 
 ## Hand-off
 

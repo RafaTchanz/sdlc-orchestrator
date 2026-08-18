@@ -102,7 +102,7 @@ Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: doc
 
 ```
 
-Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md. Tier overlay: {sdlc-coder-backend|sdlc-coder-frontend|both}. Implement per your TDD contract.")
+Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md. Tier overlay: {sdlc-coder-backend|sdlc-coder-frontend|both}. Branch: story-{n.m}-work — operate there, not on the base branch. Implement per your TDD contract.")
 
 ```
 
@@ -112,14 +112,14 @@ Note: Claude Code loads exactly one `subagent_type` per `Agent` call — for a `
 
 ```
 
-Agent(subagent_type: "sdlc-qa", prompt: "Story {n.m}, just implemented. Audit per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/qa.md.")
+Agent(subagent_type: "sdlc-qa", prompt: "Story {n.m}, just implemented. Branch: story-{n.m}-work — audit the code there, not the base branch. Audit per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/qa.md.")
 
 ```
 
 Read the signal from `qa.md`, and increment this story's QA-round counter each time this step runs after round 1:
 
 - `APPROVE` → go to 5d.
-- `NIT` or `MINOR`, round < 3 → `Agent(subagent_type: "sdlc-tuner", prompt: "Finding: {exact finding line from qa.md}. Apply the fix per your contract.")`, then re-dispatch `sdlc-qa` on the same story (round + 1).
+- `NIT` or `MINOR`, round < 3 → `Agent(subagent_type: "sdlc-tuner", prompt: "Finding: {exact finding line from qa.md}. Branch: story-{n.m}-work — operate there, not on the base branch. Apply the fix per your contract.")`, then re-dispatch `sdlc-qa` on the same story (round + 1).
 - `NIT` or `MINOR`, round = 3 and still open → reclassify `MAJOR` (per Global Constraints' loop-cap rule) and fall through to the `MAJOR` branch below instead of dispatching `sdlc-tuner` again.
 - `MAJOR`, round < 3 → re-dispatch the Coder squad (5b) with the finding included in the prompt, then re-run 5c (round + 1).
 - `MAJOR`, round = 3 and still open, or `CRITICAL`/`BLOCKED` at any round → stop, escalate to the human with the finding, **[GATE]** (unscheduled — this is the "escalate" gate from design §3, distinct from the six numbered gates).
@@ -129,16 +129,16 @@ Read the signal from `qa.md`, and increment this story's QA-round counter each t
 ```
 
 parallel:
-Agent(subagent_type: "sdlc-reviewer", prompt: "Story {n.m}. Review per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/review.md.")
-Agent(subagent_type: "sdlc-stress", prompt: "Story {n.m}. Stress-test per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/stress.md.")
+Agent(subagent_type: "sdlc-reviewer", prompt: "Story {n.m}. Branch: story-{n.m}-work — review the code there, not the base branch. Review per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/review.md.")
+Agent(subagent_type: "sdlc-stress", prompt: "Story {n.m}. Branch: story-{n.m}-work — stress-test the code there, not the base branch. Stress-test per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/stress.md.")
 
 ```
 
 Read both Review's and Stress's signals and take the worse of the two (`CRITICAL`/`BLOCKED` > `MAJOR` > `MINOR`/`NIT` > `APPROVE`), incrementing this story's Review/Stress-round counter each time this step runs after round 1:
 
-- Worse-of-the-two is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in either report), dispatch `sdlc-tuner` on each, then re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1).
+- Worse-of-the-two is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in either report), dispatch `sdlc-tuner` on each (with the finding included in the prompt, same branch clause as 5c's Tuner dispatch), then re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1).
 - Worse-of-the-two is `NIT`/`MINOR` only, round = 3 and still open → reclassify `MAJOR` and fall through to the branch below instead of dispatching `sdlc-tuner` again.
-- Worse-of-the-two is `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b), then re-run 5c and 5d from the top for this story (round + 1).
+- Worse-of-the-two is `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b) with the finding included in the prompt, then re-run 5c and 5d from the top for this story (round + 1).
 - Worse-of-the-two is `MAJOR`/`CRITICAL`, round = 3 and still open → reclassify `CRITICAL`/`BLOCKED` (if not already) and stop, escalate to the human, **[GATE]** (unscheduled — same escalation gate as 5c's).
 
 **5e — Verdict**
@@ -158,8 +158,8 @@ Update the manifest row's `Status` to `done` once the story's verdict gate clear
 ```
 
 parallel:
-Agent(subagent_type: "sdlc-security", prompt: "Target: current branch, full diff since main. Write docs/sdlc/epics/epic-{n}/security-review.md.")
-Agent(subagent_type: "sdlc-quality-gate", prompt: "Target: current branch. Write docs/sdlc/epics/epic-{n}/quality-gate.md.")
+Agent(subagent_type: "sdlc-security", prompt: "Target: current branch, full diff since main. Write docs/sdlc/security-review.md.")
+Agent(subagent_type: "sdlc-quality-gate", prompt: "Target: current branch. Write docs/sdlc/quality-gate.md.")
 
 ```
 
@@ -171,7 +171,7 @@ Any `CRITICAL` from Security, or `FAIL` overall from Quality Gate, stops the tru
 
 ```
 
-Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — security-review.md and quality-gate.md both clean. Open the PR per your contract.")
+Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — docs/sdlc/security-review.md and docs/sdlc/quality-gate.md both clean. Gate 5 already confirmed — proceed without asking again. Open the PR per your contract.")
 
 ```
 
@@ -181,7 +181,7 @@ Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — security-review.md and q
 
 ```
 
-Agent(subagent_type: "sdlc-devops", prompt: "Release half: current release branch state. Write docs/sdlc/release.md and tag/publish per your contract once confirmed.")
+Agent(subagent_type: "sdlc-devops", prompt: "Release half: current release branch state. Gate 6 already confirmed — proceed without asking again. Write docs/sdlc/release.md and tag/publish per your contract.")
 
 ```
 

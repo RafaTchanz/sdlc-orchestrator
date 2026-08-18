@@ -4,7 +4,7 @@
 
 Kebab-case the bug's short title: lowercase, spaces/punctuation → `-`, strip anything not `[a-z0-9-]`, collapse repeated `-`. Example: `"Login button double-submits on slow network"` → `login-button-double-submits-on-slow-network`. If a `docs/sdlc/bugs/{slug}/` already exists for a materially different bug, append `-2`, `-3`, etc.
 
-Before step 1, create the dedicated branch: `bugfix-{slug}-work` off the session's base branch. Every step below — Investigator through the Gate-5 merge — operates on this branch; state it in each code-touching dispatch's prompt so the sub-agent operates there, never on the base branch.
+Before step 1, create the dedicated branch: `bugfix-{slug}-work` off the session's base branch. Every step below — Investigator through the merge gate — operates on this branch; state it in each code-touching dispatch's prompt so the sub-agent operates there, never on the base branch.
 
 ## Step 1 — Investigator
 
@@ -26,7 +26,7 @@ Agent(subagent_type: "sdlc-coder", prompt: "Root cause + RED test: docs/sdlc/bug
 
 ```
 
-Agent(subagent_type: "sdlc-qa", prompt: "Bug fix for '{slug}', just implemented. Audit per your contract. Write docs/sdlc/bugs/{slug}/qa.md.")
+Agent(subagent_type: "sdlc-qa", prompt: "Bug fix for '{slug}', just implemented. Branch: bugfix-{slug}-work — audit the code there, not the base branch. Audit per your contract. Write docs/sdlc/bugs/{slug}/qa.md.")
 
 ```
 
@@ -37,12 +37,22 @@ Routing identical to the `/sdlc` skill's step 5c (`references/phases.md` in the 
 ```
 
 parallel:
-Agent(subagent_type: "sdlc-reviewer", prompt: "Bug fix for '{slug}'. Review per your contract. Write docs/sdlc/bugs/{slug}/review.md.")
-Agent(subagent_type: "sdlc-stress", prompt: "Bug fix for '{slug}'. Stress-test per your contract. Write docs/sdlc/bugs/{slug}/stress.md.")
+Agent(subagent_type: "sdlc-reviewer", prompt: "Bug fix for '{slug}'. Branch: bugfix-{slug}-work — review the code there, not the base branch. Review per your contract. Write docs/sdlc/bugs/{slug}/review.md.")
+Agent(subagent_type: "sdlc-stress", prompt: "Bug fix for '{slug}'. Branch: bugfix-{slug}-work — stress-test the code there, not the base branch. Stress-test per your contract. Write docs/sdlc/bugs/{slug}/stress.md.")
 
 ```
 
 Routing identical to the `/sdlc` skill's step 5d — worse of the two signals — reuse that logic, this file doesn't repeat it.
+
+## Tuner dispatch (used by steps 3 and 4's NIT/MINOR routing)
+
+```
+
+Agent(subagent_type: "sdlc-tuner", prompt: "Finding: {exact finding line from qa.md, review.md, or stress.md}. Branch: bugfix-{slug}-work — operate there, not on the base branch. Apply the fix per your contract.")
+
+```
+
+When to dispatch this and what to re-run afterward is identical to the `/sdlc` skill's steps 5c/5d — reuse that logic, this file doesn't repeat it.
 
 ## Step 5 — Verdict
 

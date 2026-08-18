@@ -14,15 +14,16 @@ description: Generates missing infrastructure-as-code artifacts and cuts a relea
 ## Steps
 
 1. Confirm the release branch/target with the user if not already clear from context.
-2. Dispatch:
+2. Read `docs/sdlc/architecture.md`'s Deployment Topology section if the file exists — the IaC half of the dispatch below needs it.
+3. Dispatch:
 
 ```
 
-Agent(subagent_type: "sdlc-devops", prompt: "Release branch: {target}. Standalone call — you must ask the dispatching context for explicit confirmation before any git tag/publish step; that confirmation has NOT already been given by a trunk gate.")
+Agent(subagent_type: "sdlc-devops", prompt: "Release branch: {target}. Deployment Topology: {excerpt from architecture.md's Deployment Topology section, or 'not available — architecture.md not found' if it doesn't exist}. Standalone call — you must ask the dispatching context for explicit confirmation before any git tag/publish step; that confirmation has NOT already been given by a trunk gate.")
 
 ```
 
-3. If the agent's response indicates it is waiting on confirmation, relay that request to the user verbatim and re-dispatch once they answer.
-4. Report the returned hand-off line back to the user verbatim.
+4. If the agent's response indicates it is waiting on confirmation, relay that request to the user verbatim and re-dispatch once they answer.
+5. Report the returned hand-off line back to the user verbatim.
 
 **Done when**: `docs/sdlc/release.md` exists and, if the user confirmed, the release is tagged/published.
