@@ -2,6 +2,8 @@
 
 This is the same loop as `/sdlc`'s story-loop step 5 (see the `sdlc` skill's `references/phases.md` for the fully-annotated version) run exactly once, since a task-manifest has exactly one row/story. Restated here in full so this skill is readable standalone:
 
+Before step 1, create a dedicated branch off the session's base branch: `git checkout -b story-1.1-work` (the synthetic `epic-1`/`story-1.1` IDs are fixed for `/sdlc-task`, per the note under step 1). Every step below operates on this branch; state it in each code-touching dispatch's prompt so the sub-agent operates there, never on the base branch.
+
 ## 1 — Scrum Master
 
 ```
@@ -13,7 +15,7 @@ Agent(subagent_type: "sdlc-scrum-master", prompt: "Task manifest row: docs/sdlc/
 ## 2 — Coder squad
 
 ```
-Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-1/stories/story-1.1.md. Tier overlay: {from the task-manifest row}. Implement per your TDD contract.")
+Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-1/stories/story-1.1.md. Tier overlay: {from the task-manifest row}. Branch: story-1.1-work — operate there, not on the base branch. Implement per your TDD contract.")
 ```
 
 ## 3 — QA, with Tuner routing
@@ -30,7 +32,7 @@ Same signal routing as `/sdlc` step 5d.
 Agent(subagent_type: "sdlc-verdict", prompt: "Story 1.1. Aggregate docs/sdlc/epics/epic-1/story-1.1/{qa,review,stress}.md.")
 ```
 
-**[GATE]** before merge — same as `/sdlc`'s gate 4, unnumbered here since `/sdlc-task` only ever has one story.
+**[GATE]** before merge — same as `/sdlc`'s gate 4, unnumbered here since `/sdlc-task` only ever has one story. On confirmation, merge `story-1.1-work` into the base branch and delete it; on rejection/rework, stay on the branch — no merge.
 
 ## 6 — Rejoin trunk
 

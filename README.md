@@ -1,6 +1,6 @@
 # sdlc-orchestrator
 
-A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 19 single-purpose agent personas, driven by 9 skills.
+A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 20 single-purpose agent personas, driven by 9 skills.
 
 Built from scratch. No runtime dependency on any other installed plugin (content inspiration only, all prose original).
 
@@ -25,12 +25,15 @@ Usable independently of the full lifecycle, each asking for its own explicit con
 - `/sdlc-grill-me` — adversarial re-read of a plan or design document.
 - `/sdlc-handoff` — closes out a session: appends a `PROGRESS.md` entry and recaps.
 
-## Governance & guardrails
+## Global Constraints
 
-Each agent's `.md` file carries its own `## Contract` (Input / Output / Boundary) — the source of truth for what it may read, must produce, and must never touch. A few cross-cutting rules apply to all of them:
+Each agent's `.md` file carries its own `## Contract` (Input / Output / Boundary) — the source of truth for what it may read, must produce, and must never touch. This section is the canonical home for the cross-cutting rules every agent inherits — every "see Global Constraints" reference elsewhere in `agents/`/`skills/` points here:
 
-- **Signal vocabulary**: every audit/review agent reports one of `APPROVE`, `NIT`, `MINOR`, `MAJOR`, `CRITICAL`, `BLOCKED` — no synonyms, defined once in the design doc's Global Constraints.
-- **Loop cap**: QA and Review each get up to 3 rounds per story, tracked independently. An unresolved `NIT`/`MINOR` at round 3 escalates to `MAJOR` (back to the Coder squad); an unresolved `MAJOR` at round 3 escalates to `CRITICAL`/`BLOCKED` and stops at a human-decision gate. Full routing logic: [`skills/sdlc/references/phases.md`](skills/sdlc/references/phases.md).
+- **Signal vocabulary**: every audit/review agent reports one of `APPROVE`, `NIT`, `MINOR`, `MAJOR`, `CRITICAL`, `BLOCKED` — no synonyms. Not every agent can emit every signal: `BLOCKED` is `sdlc-qa`-only (implementation-blocking test failures); `sdlc-reviewer` and `sdlc-stress` use the other five.
+- **Loop cap & escalation**: QA, Review, and Stress each get up to 3 rounds per story, tracked independently (Review and Stress share one counter, since they run in parallel and route on the worse of their two signals). An unresolved `NIT`/`MINOR` at round 3 escalates to `MAJOR` (back to the Coder squad); an unresolved `MAJOR` at round 3 escalates to `CRITICAL`/`BLOCKED` and stops at a human-decision gate. Full routing logic: [`skills/sdlc/references/phases.md`](skills/sdlc/references/phases.md).
+- **Coverage threshold**: 85% on changed files is the shared bar for both `sdlc-qa`'s audit and `sdlc-quality-gate`'s automated gate — the two are never allowed to disagree on this number.
+- **Workspace isolation**: a session working multiple epics whose stories could touch overlapping files must give each epic its own `git worktree` before that epic's first story branch is created; a single-epic session skips this and just uses the per-story branch.
+- **Verification before completion**: a check an agent couldn't actually run (missing dependency, no applicable test, tool unavailable) is reported as a finding — never treated as a silent pass just because nothing contradicted it.
 - **State tracking**: no separate state-machine diagram — state lives in the six numbered `[GATE N]` human-approval checkpoints (plus unscheduled escalation gates) combined with `PROGRESS.md`'s `Current State` field, e.g. "story 2.3, QA round 2/3 after a MINOR Tuner fix". Convention, including the lightweight session `Metrics` (rounds used, findings by severity, gates cleared/escalated): [`skills/sdlc/references/progress-file.md`](skills/sdlc/references/progress-file.md).
 - **Least privilege**: every agent's `tools:` frontmatter lists only what that role needs (e.g. `sdlc-qa` has no `Edit`; `sdlc-handoff` has no `Bash`).
 - **Model assignment**: planning/design/validation agents run on Sonnet; the agents that write code (`sdlc-coder` + overlays, `sdlc-tuner`) and `sdlc-devops` run on Opus.
@@ -46,12 +49,12 @@ One agent, one job — no two agents share a write target, and validation is alw
 | Write           | `sdlc-coder` (+ `-backend`/`-frontend` overlays), `sdlc-tuner`                                  |
 | Validate        | `sdlc-qa`, `sdlc-reviewer`, `sdlc-stress`, `sdlc-verdict`, `sdlc-security`, `sdlc-quality-gate` |
 | Publish / close | `sdlc-pr`, `sdlc-devops`, `sdlc-handoff`                                                        |
-| Notify          | `sdlc-slack-notify`                                                                             |
+| Notify          | `sdlc-slack-notify`, `sdlc-github-issue`                                                        |
 
 ## Layout
 
 ```
-agents/    19 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
+agents/    20 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
 skills/    9 skills (sdlc, sdlc-bug-fix, sdlc-task, sdlc-security-review, sdlc-quality-gate,
            sdlc-pr-review, sdlc-release, sdlc-grill-me, sdlc-handoff)
 docs/      design doc + implementation plan this was built from

@@ -1,6 +1,6 @@
 ---
 name: sdlc-handoff
-description: Closes out the current session — reads every artifact touched, appends a PROGRESS.md entry, prints a recap. Starts no new work. Dispatched only by the /sdlc-handoff skill via Agent(subagent_type: "sdlc-handoff") — never invoked directly.
+description: Closes out the current session — reads every artifact touched, appends a PROGRESS.md entry, prints a recap. Starts no new work. Dispatched only by the /sdlc trunk or the /sdlc-handoff skill via Agent(subagent_type: "sdlc-handoff") — never invoked directly.
 model: sonnet
 tools: Read, Write, Grep, Glob
 ---
