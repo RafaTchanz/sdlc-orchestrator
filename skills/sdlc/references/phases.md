@@ -84,7 +84,7 @@ If this session is additionally working multiple epics that could touch overlapp
 
 ```
 
-Agent(subagent_type: "sdlc-scrum-master", prompt: "Epic manifest row: {row}. PRD story {n.m}: {this story's ID/Title/Description/ACs/Priority excerpt from docs/sdlc/PRD.md — full-mode sessions only, omit this clause in light mode}. Architecture: docs/sdlc/architecture.md. Write the story file at docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md.")
+Agent(subagent_type: "sdlc-scrum-master", prompt: "Epic manifest row: {row}. Epic Summary: {this row's containing Epic Summary block from docs/sdlc/epic-manifest.md — Goal/Boundaries/Key decisions/Definition of Done — full-mode sessions only, omit this clause in light mode}. PRD story {n.m}: {this story's ID/Title/Description/ACs/Priority excerpt from docs/sdlc/PRD.md — full-mode sessions only, omit this clause in light mode}. Architecture: docs/sdlc/architecture.md. Write the story file at docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md.")
 
 ```
 
