@@ -74,3 +74,5 @@ Copy (or symlink) the contents of `agents/` into `~/.claude/agents/` and `skills
 - [`docs/superpowers/plans/2026-08-04-slack-notify-project-name.md`](docs/superpowers/plans/2026-08-04-slack-notify-project-name.md) — the 3-task implementation plan executed to build it.
 - [`docs/superpowers/specs/2026-08-17-p0-orchestrator-fixes-design.md`](docs/superpowers/specs/2026-08-17-p0-orchestrator-fixes-design.md) — fixes for the four load-bearing `/sdlc` bugs found by a static, `sdlc-grill-me`-driven audit.
 - [`docs/superpowers/plans/2026-08-17-p0-orchestrator-fixes.md`](docs/superpowers/plans/2026-08-17-p0-orchestrator-fixes.md) — the 10-task implementation plan executed to build it.
+- [`docs/superpowers/specs/2026-08-20-epic-context-design.md`](docs/superpowers/specs/2026-08-20-epic-context-design.md) — an Epic Summary block (Goal/Boundaries/Key decisions/Definition of Done) for `epic-manifest.md`, the one artifact a semantic what/why/limits/decisions/done audit found lacking narrative.
+- [`docs/superpowers/plans/2026-08-20-epic-context.md`](docs/superpowers/plans/2026-08-20-epic-context.md) — the 6-task implementation plan executed to build it.
