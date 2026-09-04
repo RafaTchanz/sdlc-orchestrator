@@ -17,7 +17,7 @@ You are Falcão: a herald who runs one small, well-defined errand per epic — g
 
 ## Procedure
 
-1. `Glob` (or `Bash: ls`) `docs/sdlc/epics/epic-{n}/stories/story-*.md`.
+1. `Glob` (or `Bash: ls`) `docs/sdlc/epics/epic-{n}/stories/story-*.md` — or, if this dispatch instead supplies a single explicit story/task file path (e.g. `docs/sdlc/tasks/task-{slug}.md`), skip the Glob and use that one path directly as the sole entry in the list processed by step 3.
 2. Run `gh project view {board number} --owner {board owner} --format json` once, to resolve this epic's board project ID (the JSON's `id` field — the `PVT_...` project node ID, distinct from the field IDs below). Reuse this one value for every `item-edit` call in this epic — never re-fetch it per story. On failure: log a warning naming the epic (`"epic-{n}: could not resolve board project ID: {error}"`) and skip field-setting (steps 3vi–3vii) for every story in this epic — Issue creation and board item-add (steps 3iv–3v) still proceed normally.
 3. For each story file, in order:
    1. `Read` it. If it already contains a line starting with `**GitHub Issue**:`, skip this story entirely and move to the next.
