@@ -1,6 +1,6 @@
 # sdlc-orchestrator
 
-A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 20 single-purpose agent personas, driven by 9 skills.
+A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 21 single-purpose agent personas, driven by 10 skills.
 
 Built from scratch. No runtime dependency on any other installed plugin (content inspiration only, all prose original).
 
@@ -24,6 +24,7 @@ Usable independently of the full lifecycle, each asking for its own explicit con
 - `/sdlc-release` — changelog, semver bump, tag, publish.
 - `/sdlc-grill-me` — adversarial re-read of a plan or design document.
 - `/sdlc-handoff` — closes out a session: appends a `PROGRESS.md` entry and recaps.
+- `/sdlc-write-task` — writes one grounded task document (Context/DoR/AC/Technical Notes/DoD/Open Questions) without running the full task pipeline; optional GitHub Issue creation.
 
 ## Global Constraints
 
@@ -46,7 +47,7 @@ One agent, one job — no two agents share a write target, and validation is alw
 | Phase           | Agents                                                                                          |
 | --------------- | ----------------------------------------------------------------------------------------------- |
 | Discover        | `sdlc-analyst`, `sdlc-bug-investigator`                                                         |
-| Decide / plan   | `sdlc-pm`, `sdlc-architect`, `sdlc-scrum-master`                                                |
+| Decide / plan   | `sdlc-pm`, `sdlc-architect`, `sdlc-scrum-master`, `sdlc-task-writer`                            |
 | Write           | `sdlc-coder` (+ `-backend`/`-frontend` overlays), `sdlc-tuner`                                  |
 | Validate        | `sdlc-qa`, `sdlc-reviewer`, `sdlc-stress`, `sdlc-verdict`, `sdlc-security`, `sdlc-quality-gate` |
 | Publish / close | `sdlc-pr`, `sdlc-devops`, `sdlc-handoff`                                                        |
@@ -55,9 +56,9 @@ One agent, one job — no two agents share a write target, and validation is alw
 ## Layout
 
 ```
-agents/    20 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
-skills/    9 skills (sdlc, sdlc-bug-fix, sdlc-task, sdlc-security-review, sdlc-quality-gate,
-           sdlc-pr-review, sdlc-release, sdlc-grill-me, sdlc-handoff)
+agents/    21 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
+skills/    10 skills (sdlc, sdlc-bug-fix, sdlc-task, sdlc-security-review, sdlc-quality-gate,
+           sdlc-pr-review, sdlc-release, sdlc-grill-me, sdlc-handoff, sdlc-write-task)
 docs/      design doc + implementation plan this was built from
 ```
 
@@ -79,3 +80,5 @@ Copy (or symlink) the contents of `agents/` into `~/.claude/agents/` and `skills
 - [`docs/superpowers/plans/2026-08-20-epic-context.md`](docs/superpowers/plans/2026-08-20-epic-context.md) — the 6-task implementation plan executed to build it.
 - [`docs/superpowers/specs/2026-08-20-pipeline-consistency-fixes-design.md`](docs/superpowers/specs/2026-08-20-pipeline-consistency-fixes-design.md) — 5 findings from a business-validation audit of the whole `/sdlc` pipeline (round-history loss, a skipped IaC dispatch, an unenforced multi-repo limit, ignored Tuner escalations, undriven CI/quality-gate coupling).
 - [`docs/superpowers/plans/2026-08-20-pipeline-consistency-fixes.md`](docs/superpowers/plans/2026-08-20-pipeline-consistency-fixes.md) — the implementation plan executed to fix all 5.
+- [`docs/superpowers/specs/2026-09-04-write-task-skill-design.md`](docs/superpowers/specs/2026-09-04-write-task-skill-design.md) — a standalone `/sdlc-write-task` skill that writes one grounded task document without running the full task pipeline.
+- [`docs/superpowers/plans/2026-09-04-write-task-skill.md`](docs/superpowers/plans/2026-09-04-write-task-skill.md) — the 6-task implementation plan executed to build it.
