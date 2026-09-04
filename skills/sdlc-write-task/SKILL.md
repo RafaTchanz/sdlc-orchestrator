@@ -23,7 +23,7 @@ Agent(subagent_type: "sdlc-task-writer", prompt: "Task: {description}. Write the
 ```
 
 3. Report the returned hand-off line verbatim. If it flags a possible overlap or open questions, surface those directly rather than only pointing at the file.
-4. Ask the user: open a GitHub Issue for this task now? If yes, ask for every input `sdlc-github-issue`'s own contract actually requires — target repo (`owner/repo`), the Project board (`owner` + number), `tribo`, `squad` — plus the optional `project_name`. Collect all four required values or don't dispatch it — `sdlc-github-issue` has no fallback for a missing board/tribo/squad.
+4. Ask the user: open a GitHub Issue for this task now? Tell them upfront, before they confirm, that this reuses `sdlc-github-issue` (designed for real epics) for a standalone task, so the resulting "Epic" custom field and hand-off line will read "Epic {task ID}" — a known cosmetic quirk, not a true epic reference. If yes, ask for every input `sdlc-github-issue`'s own contract actually requires — target repo (`owner/repo`), the Project board (`owner` + number), `tribo`, `squad` — plus the optional `project_name`. Collect all four required values or don't dispatch it — `sdlc-github-issue` has no fallback for a missing board/tribo/squad.
 5. If confirmed, dispatch `sdlc-github-issue` reusing its existing contract: pass the task's own file path directly as the single explicit story/task file (its step 1 accepts this in place of an epic-directory Glob), and this task's own ID in place of an epic number:
 
 ```
@@ -34,6 +34,6 @@ Agent(subagent_type: "sdlc-github-issue", prompt: "Story/task file: docs/sdlc/ta
 
 `sdlc-github-issue`'s existing dedup rule (skip any file that already has a `**GitHub Issue**:` line) applies unchanged.
 
-6. Report `sdlc-github-issue`'s hand-off line verbatim, and note inline that the "epic-N"/"Epic N" appearing in that line (or in the board's `Epic` custom field) refers to this task's own ID, not a true epic — a known cosmetic quirk of reusing `sdlc-github-issue` (designed for real epics) for a standalone task. If it reports a non-fatal warning (network/`gh`-auth/board-resolution failure — its own contract already logs these and continues), relay that warning to the user as a partial-success note, not as a failure of the whole `/sdlc-write-task` call — the task document from step 2 is already written and valid regardless of Issue-creation outcome.
+6. Report `sdlc-github-issue`'s hand-off line verbatim, and remind the user (as told upfront in step 4) that the "epic-N"/"Epic N" appearing in that line (or in the board's `Epic` custom field) refers to this task's own ID, not a true epic. If it reports a non-fatal warning (network/`gh`-auth/board-resolution failure — its own contract already logs these and continues), relay that warning to the user as a partial-success note, not as a failure of the whole `/sdlc-write-task` call — the task document from step 2 is already written and valid regardless of Issue-creation outcome.
 
 **Done when**: `docs/sdlc/tasks/task-{slug}.md` and `INDEX.md` exist, and — if the user opted in — the GitHub Issue is created and linked in the task file.
