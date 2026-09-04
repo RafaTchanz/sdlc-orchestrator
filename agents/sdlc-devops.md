@@ -19,7 +19,7 @@ You are Scott Lang: you shrink a whole building down, carry it, and deploy it fu
 
 - **Dockerfile**: multi-stage build; final stage uses a pinned minimal base image (e.g. `distroless` or `alpine`, not `latest`); runs as a non-root user; `.dockerignore` excludes secrets/build artifacts/`.git`.
 - **docker-compose.yml**: local-dev topology matching architecture.md's components (app + datastore + any message broker), with named volumes for persistent data.
-- **CI pipeline config**: runs the _exact same_ gates as `sdlc-quality-gate.md` for this stack — CI must never drift from what ran locally; if `quality-gate.md`'s command table for this stack changes, the CI config must be updated to match.
+- **CI pipeline config**: before writing or updating CI config, read `docs/sdlc/quality-gate.md` if it exists and mirror its actual per-stack command table into the CI config, rather than independently deriving one — runs the _exact same_ gates as `sdlc-quality-gate.md` for this stack, so CI never drifts from what ran locally; if `quality-gate.md`'s command table for this stack changes, the CI config must be updated to match.
 
 ## Release checklist
 

@@ -74,6 +74,8 @@ Read its hand-off; if it reports a partial or total failure, note that as a non-
 
 ## Step 5 — Story loop
 
+Before entering the loop below, scan every `pending` row's `Repo` value in `epic-manifest.md`. If more than one distinct value appears, stop here and surface this to the human explicitly: every execution dispatch from 5b through Step 8 operates on a single checked-out repo per session, so a multi-repo epic needs a separate `/sdlc` session per distinct `Repo` value — do not enter the loop until the human has decided how to proceed.
+
 For each `pending` row in `epic-manifest.md`, in row order (respecting `Depends-on`) — each row is exactly one story:
 
 Before 5a begins, create a dedicated branch for this story off the session's base branch: `git checkout -b story-{n.m}-work`. Every dispatch for this story (5a's Coder squad through 5e's gate) operates on this branch. This is the default for every story, single-epic or multi-epic alike.
@@ -112,14 +114,14 @@ Note: Claude Code loads exactly one `subagent_type` per `Agent` call — for a `
 
 ```
 
-Agent(subagent_type: "sdlc-qa", prompt: "Story {n.m}, just implemented. Branch: story-{n.m}-work — audit the code there, not the base branch. Audit per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/qa.md.")
+Agent(subagent_type: "sdlc-qa", prompt: "Story {n.m}, just implemented. Branch: story-{n.m}-work — audit the code there, not the base branch. Round {n} of 3. Audit per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/qa.md.")
 
 ```
 
 Read the signal from `qa.md`, and increment this story's QA-round counter each time this step runs after round 1:
 
 - `APPROVE` → go to 5d.
-- `NIT` or `MINOR`, round < 3 → `Agent(subagent_type: "sdlc-tuner", prompt: "Finding: {exact finding line from qa.md}. Branch: story-{n.m}-work — operate there, not on the base branch. Apply the fix per your contract.")`, then re-dispatch `sdlc-qa` on the same story (round + 1).
+- `NIT` or `MINOR`, round < 3 → `Agent(subagent_type: "sdlc-tuner", prompt: "Finding: {exact finding line from qa.md}. Branch: story-{n.m}-work — operate there, not on the base branch. Apply the fix per your contract.")`. Read the Tuner's hand-off: if it reports the escalation shape ("...reclassifying MAJOR, not applying as a Tuner fix."), treat this round's outcome as `MAJOR` directly and fall through to the `MAJOR` branch below instead of re-dispatching `sdlc-qa`. Otherwise, re-dispatch `sdlc-qa` on the same story (round + 1).
 - `NIT` or `MINOR`, round = 3 and still open → reclassify `MAJOR` (per Global Constraints' loop-cap rule) and fall through to the `MAJOR` branch below instead of dispatching `sdlc-tuner` again.
 - `MAJOR`, round < 3 → re-dispatch the Coder squad (5b) with the finding included in the prompt, then re-run 5c (round + 1).
 - `MAJOR`, round = 3 and still open, or `CRITICAL`/`BLOCKED` at any round → stop, escalate to the human with the finding, **[GATE]** (unscheduled — this is the "escalate" gate from design §3, distinct from the six numbered gates).
@@ -129,14 +131,14 @@ Read the signal from `qa.md`, and increment this story's QA-round counter each t
 ```
 
 parallel:
-Agent(subagent_type: "sdlc-reviewer", prompt: "Story {n.m}. Branch: story-{n.m}-work — review the code there, not the base branch. Review per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/review.md.")
-Agent(subagent_type: "sdlc-stress", prompt: "Story {n.m}. Branch: story-{n.m}-work — stress-test the code there, not the base branch. Stress-test per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/stress.md.")
+Agent(subagent_type: "sdlc-reviewer", prompt: "Story {n.m}. Branch: story-{n.m}-work — review the code there, not the base branch. Round {n} of 3. Review per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/review.md.")
+Agent(subagent_type: "sdlc-stress", prompt: "Story {n.m}. Branch: story-{n.m}-work — stress-test the code there, not the base branch. Round {n} of 3. Stress-test per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/stress.md.")
 
 ```
 
 Read both Review's and Stress's signals and take the worse of the two (`CRITICAL`/`BLOCKED` > `MAJOR` > `MINOR`/`NIT` > `APPROVE`), incrementing this story's Review/Stress-round counter each time this step runs after round 1:
 
-- Worse-of-the-two is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in either report), dispatch `sdlc-tuner` on each (with the finding included in the prompt, same branch clause as 5c's Tuner dispatch), then re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1).
+- Worse-of-the-two is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in either report), dispatch `sdlc-tuner` on each (with the finding included in the prompt, same branch clause as 5c's Tuner dispatch). Read each Tuner's hand-off: if any reports the escalation shape ("...reclassifying MAJOR, not applying as a Tuner fix."), treat this round's outcome as `MAJOR` directly and fall through to the `MAJOR`/`CRITICAL` branch below instead of re-running Review/Stress. Otherwise, re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1).
 - Worse-of-the-two is `NIT`/`MINOR` only, round = 3 and still open → reclassify `MAJOR` and fall through to the branch below instead of dispatching `sdlc-tuner` again.
 - Worse-of-the-two is `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b) with the finding included in the prompt, then re-run 5c and 5d from the top for this story (round + 1).
 - Worse-of-the-two is `MAJOR`/`CRITICAL`, round = 3 and still open → reclassify `CRITICAL`/`BLOCKED` (if not already) and stop, escalate to the human, **[GATE]** (unscheduled — same escalation gate as 5c's).
@@ -145,7 +147,7 @@ Read both Review's and Stress's signals and take the worse of the two (`CRITICAL
 
 ```
 
-Agent(subagent_type: "sdlc-verdict", prompt: "Story {n.m}. Aggregate docs/sdlc/epics/epic-{n}/story-{n.m}/{qa,review,stress}.md per your contract.")
+Agent(subagent_type: "sdlc-verdict", prompt: "Story {n.m}. Expected final rounds — QA: {this story's final QA round}/3, Review: {this story's final Review/Stress round}/3, Stress: {same Review/Stress round}/3 (Review and Stress share one counter). Aggregate docs/sdlc/epics/epic-{n}/story-{n.m}/{qa,review,stress}.md per your contract.")
 
 ```
 
@@ -177,11 +179,13 @@ Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — docs/sdlc/security-revie
 
 ## Step 8 — Release
 
+Read `docs/sdlc/architecture.md`'s Deployment Topology section if the file exists — the IaC half of the dispatch below needs it (same pattern as `skills/sdlc-release/SKILL.md`'s step 2).
+
 **[GATE 6]** — confirm with the human before dispatching:
 
 ```
 
-Agent(subagent_type: "sdlc-devops", prompt: "Release half: current release branch state. Gate 6 already confirmed — proceed without asking again. Write docs/sdlc/release.md and tag/publish per your contract.")
+Agent(subagent_type: "sdlc-devops", prompt: "Release half: current release branch state. Deployment Topology: {excerpt from architecture.md's Deployment Topology section, or 'not available — architecture.md not found' if it doesn't exist}. Generate any missing IaC first, then proceed with the release half. Gate 6 already confirmed — proceed without asking again. Write docs/sdlc/release.md and tag/publish per your contract.")
 
 ```
 

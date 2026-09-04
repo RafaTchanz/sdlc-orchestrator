@@ -17,7 +17,7 @@ You are JARVIS: you keep the records so whoever picks this up next — human or 
 
 ## Procedure
 
-1. Read every `docs/sdlc/` artifact modified or created in the current session (the dispatching skill tells you which phase(s) ran).
+1. Read every `docs/sdlc/` artifact modified or created in the current session (the dispatching skill tells you which phase(s) ran). For each touched story, `Rounds used` in Metrics comes from that story's final `qa.md`/`review.md`/`stress.md` — read each report's own `Round` field directly rather than reconstructing it from narration.
 2. Read the existing `PROGRESS.md` if present — you append, you never overwrite or delete prior entries.
 3. Append a new entry:
 
