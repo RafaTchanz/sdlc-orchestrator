@@ -1,6 +1,6 @@
 # sdlc-orchestrator
 
-A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 20 single-purpose agent personas, driven by 9 skills.
+A self-contained Claude Code plugin that runs a full software delivery lifecycle — idea → brief → PRD → architecture → epics/stories → TDD implementation → QA → review → stress test → verdict → security review → quality gate → PR → release → handoff — as a chain of 21 single-purpose agent personas, driven by 10 skills.
 
 Built from scratch. No runtime dependency on any other installed plugin (content inspiration only, all prose original).
 
@@ -24,6 +24,7 @@ Usable independently of the full lifecycle, each asking for its own explicit con
 - `/sdlc-release` — changelog, semver bump, tag, publish.
 - `/sdlc-grill-me` — adversarial re-read of a plan or design document.
 - `/sdlc-handoff` — closes out a session: appends a `PROGRESS.md` entry and recaps.
+- `/sdlc-write-task` — writes one grounded task document (Context/DoR/AC/Technical Notes/DoD/Open Questions) without running the full task pipeline; optional GitHub Issue creation.
 
 ## Global Constraints
 
@@ -33,6 +34,7 @@ Each agent's `.md` file carries its own `## Contract` (Input / Output / Boundary
 - **Loop cap & escalation**: QA, Review, and Stress each get up to 3 rounds per story, tracked independently (Review and Stress share one counter, since they run in parallel and route on the worse of their two signals). An unresolved `NIT`/`MINOR` at round 3 escalates to `MAJOR` (back to the Coder squad); an unresolved `MAJOR` at round 3 escalates to `CRITICAL`/`BLOCKED` and stops at a human-decision gate. Full routing logic: [`skills/sdlc/references/phases.md`](skills/sdlc/references/phases.md).
 - **Coverage threshold**: 85% on changed files is the shared bar for both `sdlc-qa`'s audit and `sdlc-quality-gate`'s automated gate — the two are never allowed to disagree on this number.
 - **Workspace isolation**: a session working multiple epics whose stories could touch overlapping files must give each epic its own `git worktree` before that epic's first story branch is created; a single-epic session skips this and just uses the per-story branch.
+- **Single-repo execution per session**: `epic-manifest.md` rows may declare distinct `Repo` values, but every execution dispatch from Coder squad through Release operates on one checked-out repo per session — a multi-repo epic needs a separate `/sdlc` session per distinct `Repo` value; `/sdlc` stops and surfaces this before Step 5 if a manifest mixes repos.
 - **Verification before completion**: a check an agent couldn't actually run (missing dependency, no applicable test, tool unavailable) is reported as a finding — never treated as a silent pass just because nothing contradicted it.
 - **State tracking**: no separate state-machine diagram — state lives in the six numbered `[GATE N]` human-approval checkpoints (plus unscheduled escalation gates) combined with `PROGRESS.md`'s `Current State` field, e.g. "story 2.3, QA round 2/3 after a MINOR Tuner fix". Convention, including the lightweight session `Metrics` (rounds used, findings by severity, gates cleared/escalated): [`skills/sdlc/references/progress-file.md`](skills/sdlc/references/progress-file.md).
 - **Least privilege**: every agent's `tools:` frontmatter lists only what that role needs (e.g. `sdlc-qa` has no `Edit`; `sdlc-handoff` has no `Bash`).
@@ -45,7 +47,7 @@ One agent, one job — no two agents share a write target, and validation is alw
 | Phase           | Agents                                                                                          |
 | --------------- | ----------------------------------------------------------------------------------------------- |
 | Discover        | `sdlc-analyst`, `sdlc-bug-investigator`                                                         |
-| Decide / plan   | `sdlc-pm`, `sdlc-architect`, `sdlc-scrum-master`                                                |
+| Decide / plan   | `sdlc-pm`, `sdlc-architect`, `sdlc-scrum-master`, `sdlc-task-writer`                            |
 | Write           | `sdlc-coder` (+ `-backend`/`-frontend` overlays), `sdlc-tuner`                                  |
 | Validate        | `sdlc-qa`, `sdlc-reviewer`, `sdlc-stress`, `sdlc-verdict`, `sdlc-security`, `sdlc-quality-gate` |
 | Publish / close | `sdlc-pr`, `sdlc-devops`, `sdlc-handoff`                                                        |
@@ -54,9 +56,9 @@ One agent, one job — no two agents share a write target, and validation is alw
 ## Layout
 
 ```
-agents/    20 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
-skills/    9 skills (sdlc, sdlc-bug-fix, sdlc-task, sdlc-security-review, sdlc-quality-gate,
-           sdlc-pr-review, sdlc-release, sdlc-grill-me, sdlc-handoff)
+agents/    21 persona files (sdlc-analyst, sdlc-pm, sdlc-architect, sdlc-coder(+overlays), ...)
+skills/    10 skills (sdlc, sdlc-bug-fix, sdlc-task, sdlc-security-review, sdlc-quality-gate,
+           sdlc-pr-review, sdlc-release, sdlc-grill-me, sdlc-handoff, sdlc-write-task)
 docs/      design doc + implementation plan this was built from
 ```
 
@@ -76,3 +78,7 @@ Copy (or symlink) the contents of `agents/` into `~/.claude/agents/` and `skills
 - [`docs/superpowers/plans/2026-08-17-p0-orchestrator-fixes.md`](docs/superpowers/plans/2026-08-17-p0-orchestrator-fixes.md) — the 10-task implementation plan executed to build it.
 - [`docs/superpowers/specs/2026-08-20-epic-context-design.md`](docs/superpowers/specs/2026-08-20-epic-context-design.md) — an Epic Summary block (Goal/Boundaries/Key decisions/Definition of Done) for `epic-manifest.md`, the one artifact a semantic what/why/limits/decisions/done audit found lacking narrative.
 - [`docs/superpowers/plans/2026-08-20-epic-context.md`](docs/superpowers/plans/2026-08-20-epic-context.md) — the 6-task implementation plan executed to build it.
+- [`docs/superpowers/specs/2026-08-20-pipeline-consistency-fixes-design.md`](docs/superpowers/specs/2026-08-20-pipeline-consistency-fixes-design.md) — 5 findings from a business-validation audit of the whole `/sdlc` pipeline (round-history loss, a skipped IaC dispatch, an unenforced multi-repo limit, ignored Tuner escalations, undriven CI/quality-gate coupling).
+- [`docs/superpowers/plans/2026-08-20-pipeline-consistency-fixes.md`](docs/superpowers/plans/2026-08-20-pipeline-consistency-fixes.md) — the implementation plan executed to fix all 5.
+- [`docs/superpowers/specs/2026-09-04-write-task-skill-design.md`](docs/superpowers/specs/2026-09-04-write-task-skill-design.md) — a standalone `/sdlc-write-task` skill that writes one grounded task document without running the full task pipeline.
+- [`docs/superpowers/plans/2026-09-04-write-task-skill.md`](docs/superpowers/plans/2026-09-04-write-task-skill.md) — the 6-task implementation plan executed to build it.
