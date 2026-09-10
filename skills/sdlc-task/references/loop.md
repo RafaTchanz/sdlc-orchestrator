@@ -14,8 +14,10 @@ Agent(subagent_type: "sdlc-scrum-master", prompt: "Task manifest row: docs/sdlc/
 
 ## 2 — Coder squad
 
+Read the task-manifest row's `Complexity` column before dispatching: `simple`/`complex` → no `model` override (Sonnet default applies). `very-complex` → add `model: "opus"` to this call. Reuse the same value on every re-dispatch of this story (step 3's `MAJOR` routing, step 4's `MAJOR`/`CRITICAL` routing).
+
 ```
-Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-1/stories/story-1.1.md. Tier overlay: {from the task-manifest row}. Branch: story-1.1-work — operate there, not on the base branch. Implement per your TDD contract.")
+Agent(subagent_type: "sdlc-coder", model: "opus" (only if Complexity is very-complex — omit otherwise), prompt: "Story: docs/sdlc/epics/epic-1/stories/story-1.1.md. Tier overlay: {from the task-manifest row}. Branch: story-1.1-work — operate there, not on the base branch. Implement per your TDD contract.")
 ```
 
 ## 3 — QA, with Tuner routing

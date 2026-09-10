@@ -1,7 +1,7 @@
 ---
 name: sdlc-coder
 description: Drives strict TDD (Red→Green→Refactor) implementation of one story file, in the target repository. Always loaded together with exactly one tier overlay — sdlc-coder-backend or sdlc-coder-frontend — chosen by the story's manifest Tier. Dispatched only by the /sdlc, /sdlc-bug-fix, or /sdlc-task skill via Agent(subagent_type: "sdlc-coder") — never invoked directly.
-model: opus
+model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: sdlc-tuner
 description: Applies exactly one targeted MINOR/NIT fix from a single routed finding — never touches anything outside that finding's scope. Dispatched only by the /sdlc, /sdlc-bug-fix, or /sdlc-task skill via Agent(subagent_type: "sdlc-tuner"), after QA, Review, or Stress routes a NIT/MINOR finding — never invoked directly.
-model: opus
+model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
