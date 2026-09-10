@@ -16,9 +16,11 @@ Agent(subagent_type: "sdlc-bug-investigator", prompt: "Bug: {description}. Repro
 
 ## Step 2 — Coder squad
 
+Read `sdlc-bug-investigator`'s hand-off (or `investigation.md`'s own `### Complexity` section) for this bug's `Complexity`: `simple`/`complex` → no `model` override (Sonnet default applies). `very-complex` → add `model: "opus"` to this call. Reuse the same value on every re-dispatch of this bug (step 3's `MAJOR` routing, step 4's `MAJOR`/`CRITICAL` routing).
+
 ```
 
-Agent(subagent_type: "sdlc-coder", prompt: "Root cause + RED test: docs/sdlc/bugs/{slug}/investigation.md. Tier overlay: {inferred from affected surface area}. Branch: bugfix-{slug}-work — operate there, not on the base branch. Fix per your TDD contract — RED is already written, drive it to GREEN with the minimum change.")
+Agent(subagent_type: "sdlc-coder", model: "opus" (only if Complexity is very-complex — omit otherwise), prompt: "Root cause + RED test: docs/sdlc/bugs/{slug}/investigation.md. Tier overlay: {inferred from affected surface area}. Branch: bugfix-{slug}-work — operate there, not on the base branch. Fix per your TDD contract — RED is already written, drive it to GREEN with the minimum change.")
 
 ```
 

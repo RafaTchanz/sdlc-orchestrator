@@ -2,6 +2,21 @@
 
 Each dispatch below is a call shape: `Agent(subagent_type: "sdlc-...", prompt: "...")`. The orchestrating skill reads back only the sub-agent's one-line hand-off (per each agent's own "Hand-off" section) — never the full artifact — then reads the artifact file directly if it needs specific content for the next dispatch prompt.
 
+## Index
+
+Resuming mid-pipeline (e.g. after a context compaction or a new session reading `PROGRESS.md`)? Jump straight to the relevant step below instead of re-reading this file top to bottom.
+
+| Step | Section                                                                         | Dispatches                                                                                                                                           | Gate                                              |
+| ---- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| 2    | [Analyst](#step-2--analyst)                                                     | `sdlc-analyst` (+ `sdlc-slack-notify` if opted in)                                                                                                   | GATE 1                                            |
+| 3    | [PM](#step-3--pm)                                                               | `sdlc-pm` (+ `sdlc-slack-notify` if opted in)                                                                                                        | GATE 2                                            |
+| 4    | [Architect + grill-me](#step-4--architect--grill-me)                            | `sdlc-architect`, `/sdlc-grill-me` (+ `sdlc-slack-notify` if opted in)                                                                               | GATE 3                                            |
+| 5    | [Story loop](#step-5--story-loop)                                               | `sdlc-scrum-master`, `sdlc-github-issue` (if opted in), Coder squad, `sdlc-qa`, `sdlc-reviewer`+`sdlc-stress`, `sdlc-verdict`, `sdlc-tuner` (routed) | GATE 4 (per story) + unscheduled escalation gates |
+| 6    | [Security + Quality Gate](#step-6--security--quality-gate-parallel-independent) | `sdlc-security`, `sdlc-quality-gate` (parallel)                                                                                                      | —                                                 |
+| 7    | [PR](#step-7--pr)                                                               | `sdlc-pr`                                                                                                                                            | GATE 5                                            |
+| 8    | [Release](#step-8--release)                                                     | `sdlc-devops`                                                                                                                                        | GATE 6                                            |
+| 9    | [Handoff](#step-9--handoff)                                                     | `sdlc-handoff`                                                                                                                                       | —                                                 |
+
 ## Step 2 — Analyst
 
 ```
@@ -102,9 +117,11 @@ Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: doc
 
 **5b — Coder squad** (per story; tier overlay chosen from the row's `Tier` column — `backend`→`sdlc-coder-backend`, `frontend`→`sdlc-coder-frontend`, `fullstack`→ dispatch both overlays' guidance in one prompt alongside the core)
 
+Read this row's `Complexity` column before dispatching: `simple`/`complex` → dispatch with no `model` override (the agent's own Sonnet default applies). `very-complex` → add `model: "opus"` to this `Agent()` call. Reuse the same value on every re-dispatch of this story (5c's `MAJOR` routing, 5d's `MAJOR`/`CRITICAL` routing) — it doesn't change round to round.
+
 ```
 
-Agent(subagent_type: "sdlc-coder", prompt: "Story: docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md. Tier overlay: {sdlc-coder-backend|sdlc-coder-frontend|both}. Branch: story-{n.m}-work — operate there, not on the base branch. Implement per your TDD contract.")
+Agent(subagent_type: "sdlc-coder", model: "opus" (only if this row's Complexity is very-complex — omit otherwise), prompt: "Story: docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md. Tier overlay: {sdlc-coder-backend|sdlc-coder-frontend|both}. Branch: story-{n.m}-work — operate there, not on the base branch. Implement per your TDD contract.")
 
 ```
 

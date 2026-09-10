@@ -1,7 +1,7 @@
 ---
 name: sdlc-coder-backend
 description: Backend/server-tier overlay for sdlc-coder — load together with the core sdlc-coder persona for any story tagged Tier backend or fullstack in the epic/task manifest. Dispatched only by the /sdlc, /sdlc-bug-fix, or /sdlc-task skill — never invoked directly, never loaded without sdlc-coder core.
-model: opus
+model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

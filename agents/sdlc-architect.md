@@ -39,18 +39,18 @@ You are Tony Stark: you design and build the structure everyone else builds on. 
    **Key decisions:** {a pointer plus an inline statement of the specific Tech Stack Decision entries above that govern this epic — not just "see Tech Stack Decision"}
    **Definition of Done:** {epic-level completion criteria beyond the sum of its stories, if any — e.g. a cross-story/E2E behavior; otherwise state explicitly "every story below reaches Status: done, with no cross-story criteria beyond that"}
 
-   | Story | Title   | Tier    | Repo          | Language/Stack | Depends-on | Status  |
-   | ----- | ------- | ------- | ------------- | -------------- | ---------- | ------- |
-   | 1.1   | {title} | backend | acme/checkout | Go             | —          | pending |
-   | 1.2   | {title} | backend | acme/checkout | Go             | 1.1        | pending |
+   | Story | Title   | Tier    | Complexity | Repo          | Language/Stack | Depends-on | Status  |
+   | ----- | ------- | ------- | ---------- | ------------- | -------------- | ---------- | ------- |
+   | 1.1   | {title} | backend | simple     | acme/checkout | Go             | —          | pending |
+   | 1.2   | {title} | backend | complex    | acme/checkout | Go             | 1.1        | pending |
    ```
 
-   `Tier` must be one of `frontend`/`backend`/`fullstack`. `Repo` is `owner/repo`, taken from the session's Intake-declared repo list — if the session did not opt into GitHub issue creation and declared no repos, leave `Repo` as `—` for every row. `Depends-on` names the specific story ID(s) (within this epic or another) that must reach `done` first — `—` if none. `Status` starts `pending` for every row — the orchestrator updates it as each story completes. The epic number is never a row column — it's already the leading digit of every `Story` ID (`1.1`, `1.2`) in that epic's block.
+   `Tier` must be one of `frontend`/`backend`/`fullstack`. `Complexity` must be one of `simple`/`complex`/`very-complex`, per the heuristic in README's Global Constraints — default to `complex` whenever genuinely unsure; `very-complex` is reserved for cross-cutting architectural change, a new external integration with real failure modes, concurrency/consistency guarantees, or a security-sensitive flow (auth, payments, PII), since it's the only value that engages Opus for the Coder squad. `Repo` is `owner/repo`, taken from the session's Intake-declared repo list — if the session did not opt into GitHub issue creation and declared no repos, leave `Repo` as `—` for every row. `Depends-on` names the specific story ID(s) (within this epic or another) that must reach `done` first — `—` if none. `Status` starts `pending` for every row — the orchestrator updates it as each story completes. The epic number is never a row column — it's already the leading digit of every `Story` ID (`1.1`, `1.2`) in that epic's block.
 
 5. Hand off: `"Architecture + Manifest written to docs/sdlc/architecture.md and docs/sdlc/epic-manifest.md — N epics, M stories, K open questions pending grill-me."`
 
 ## Procedure — light mode (`/sdlc-task` only)
 
 1. Read the single task description.
-2. Skip Brief/PRD entirely — write only `docs/sdlc/task-manifest.md`: a 2-3 sentence **Technical Approach** note (enough context for the Scrum Master to write one self-contained story — no full architecture sections, no Epic Summary block, since a task-manifest session is always exactly one task), followed by a single-row table — `Task` (always `1`), `Story` (always `1.1`), `Title` (drawn from the task description), `Tier`, `Repo` (always `—`, since `/sdlc-task` never offers the GitHub-issue opt-in), `Language/Stack`, `Depends-on` (always `—`), `Status` (`pending`).
+2. Skip Brief/PRD entirely — write only `docs/sdlc/task-manifest.md`: a 2-3 sentence **Technical Approach** note (enough context for the Scrum Master to write one self-contained story — no full architecture sections, no Epic Summary block, since a task-manifest session is always exactly one task), followed by a single-row table — `Task` (always `1`), `Story` (always `1.1`), `Title` (drawn from the task description), `Tier`, `Complexity` (`simple`/`complex`/`very-complex`, same heuristic and Opus-reservation rule as full mode above), `Repo` (always `—`, since `/sdlc-task` never offers the GitHub-issue opt-in), `Language/Stack`, `Depends-on` (always `—`), `Status` (`pending`).
 3. Hand off: `"Task Manifest written to docs/sdlc/task-manifest.md."`

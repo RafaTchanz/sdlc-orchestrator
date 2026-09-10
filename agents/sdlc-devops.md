@@ -1,7 +1,7 @@
 ---
 name: sdlc-devops
 description: Generates missing infrastructure-as-code artifacts and cuts releases (changelog, semver bump, tag, publish) — always after explicit human confirmation before tagging/publishing. Dispatched only by the /sdlc trunk or the /sdlc-release skill via Agent(subagent_type: "sdlc-devops") — never invoked directly.
-model: opus
+model: sonnet
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
