@@ -2,9 +2,9 @@
 
 This is the same loop as `/sdlc`'s story-loop step 5 (see the `sdlc` skill's `references/phases.md` for the fully-annotated version) run exactly once, since a task-manifest has exactly one row/story. Restated here in full so this skill is readable standalone:
 
-Before step 1, create a dedicated branch off the session's base branch: `git checkout -b story-1.1-work` (the synthetic `epic-1`/`story-1.1` IDs are fixed for `/sdlc-task`, per the note under step 1). Every step below operates on this branch; state it in each code-touching dispatch's prompt so the sub-agent operates there, never on the base branch.
+The synthetic `epic-1`/`story-1.1` IDs are fixed for `/sdlc-task`, per the note under step 1. Every code-touching step below (2 onward) operates on a dedicated `story-1.1-work` branch; state it in each such dispatch's prompt so the sub-agent operates there, never on the base branch.
 
-## 1 — Scrum Master
+## 1 — Scrum Master + story gate
 
 ```
 Agent(subagent_type: "sdlc-scrum-master", prompt: "Task manifest row: docs/sdlc/task-manifest.md. Write one story file at docs/sdlc/epics/epic-1/stories/story-1.1.md.")
@@ -12,7 +12,11 @@ Agent(subagent_type: "sdlc-scrum-master", prompt: "Task manifest row: docs/sdlc/
 
 (Task-manifest flows use a synthetic `epic-1` so the persistence layout stays identical to the full `/sdlc` flow — no special-casing needed downstream.)
 
+Read the story file back and present it to the human — same batch-validation gate as `/sdlc` step 5a, just with a batch of one. **[GATE]** before any implementation. On rejection/rework, re-dispatch Scrum Master above; on approval, continue to step 2.
+
 ## 2 — Coder squad
+
+Before dispatching, create the dedicated branch off the session's base branch: `git checkout -b story-1.1-work`.
 
 Read the task-manifest row's `Complexity` column before dispatching: `simple`/`complex` → no `model` override (Sonnet default applies). `very-complex` → add `model: "opus"` to this call. Reuse the same value on every re-dispatch of this story (step 3's `MAJOR` routing, step 4's `MAJOR`/`CRITICAL` routing).
 
@@ -34,7 +38,7 @@ Same signal routing as `/sdlc` step 5d.
 Agent(subagent_type: "sdlc-verdict", prompt: "Story 1.1. Aggregate docs/sdlc/epics/epic-1/story-1.1/{qa,review,stress}.md.")
 ```
 
-**[GATE]** before merge — same as `/sdlc`'s gate 4, unnumbered here since `/sdlc-task` only ever has one story. On confirmation, merge `story-1.1-work` into the base branch and delete it; on rejection/rework, stay on the branch — no merge.
+**[GATE]** before merge — same as `/sdlc`'s gate 5, unnumbered here since `/sdlc-task` only ever has one story. On confirmation, merge `story-1.1-work` into the base branch and delete it; on rejection/rework, stay on the branch — no merge.
 
 ## 6 — Rejoin trunk
 

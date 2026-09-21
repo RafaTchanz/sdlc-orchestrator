@@ -6,16 +6,16 @@ Each dispatch below is a call shape: `Agent(subagent_type: "sdlc-...", prompt: "
 
 Resuming mid-pipeline (e.g. after a context compaction or a new session reading `PROGRESS.md`)? Jump straight to the relevant step below instead of re-reading this file top to bottom.
 
-| Step | Section                                                                         | Dispatches                                                                                                                                           | Gate                                              |
-| ---- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| 2    | [Analyst](#step-2--analyst)                                                     | `sdlc-analyst` (+ `sdlc-slack-notify` if opted in)                                                                                                   | GATE 1                                            |
-| 3    | [PM](#step-3--pm)                                                               | `sdlc-pm` (+ `sdlc-slack-notify` if opted in)                                                                                                        | GATE 2                                            |
-| 4    | [Architect + grill-me](#step-4--architect--grill-me)                            | `sdlc-architect`, `/sdlc-grill-me` (+ `sdlc-slack-notify` if opted in)                                                                               | GATE 3                                            |
-| 5    | [Story loop](#step-5--story-loop)                                               | `sdlc-scrum-master`, `sdlc-github-issue` (if opted in), Coder squad, `sdlc-qa`, `sdlc-reviewer`+`sdlc-stress`, `sdlc-verdict`, `sdlc-tuner` (routed) | GATE 4 (per story) + unscheduled escalation gates |
-| 6    | [Security + Quality Gate](#step-6--security--quality-gate-parallel-independent) | `sdlc-security`, `sdlc-quality-gate` (parallel)                                                                                                      | —                                                 |
-| 7    | [PR](#step-7--pr)                                                               | `sdlc-pr`                                                                                                                                            | GATE 5                                            |
-| 8    | [Release](#step-8--release)                                                     | `sdlc-devops`                                                                                                                                        | GATE 6                                            |
-| 9    | [Handoff](#step-9--handoff)                                                     | `sdlc-handoff`                                                                                                                                       | —                                                 |
+| Step | Section                                                                         | Dispatches                                                                                                                                                   | Gate                                                                                                    |
+| ---- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| 2    | [Analyst](#step-2--analyst)                                                     | `sdlc-analyst` (+ `sdlc-slack-notify` if opted in)                                                                                                           | GATE 1                                                                                                  |
+| 3    | [PM](#step-3--pm)                                                               | `sdlc-pm` (+ `sdlc-slack-notify` if opted in)                                                                                                                | GATE 2                                                                                                  |
+| 4    | [Architect + grill-me](#step-4--architect--grill-me)                            | `sdlc-architect`, `/sdlc-grill-me` (+ `sdlc-slack-notify` if opted in)                                                                                       | GATE 3                                                                                                  |
+| 5    | [Story loop](#step-5--story-loop)                                               | `sdlc-scrum-master` (batch), `sdlc-github-issue` (if opted in), Coder squad, `sdlc-qa`, `sdlc-reviewer`+`sdlc-stress`, `sdlc-verdict`, `sdlc-tuner` (routed) | GATE 4 (batch, before implementation) + GATE 5 (per story, before merge) + unscheduled escalation gates |
+| 6    | [Security + Quality Gate](#step-6--security--quality-gate-parallel-independent) | `sdlc-security`, `sdlc-quality-gate` (parallel)                                                                                                              | —                                                                                                       |
+| 7    | [PR](#step-7--pr)                                                               | `sdlc-pr`                                                                                                                                                    | GATE 6                                                                                                  |
+| 8    | [Release](#step-8--release)                                                     | `sdlc-devops`                                                                                                                                                | GATE 7                                                                                                  |
+| 9    | [Handoff](#step-9--handoff)                                                     | `sdlc-handoff`                                                                                                                                               | —                                                                                                       |
 
 ## Step 2 — Analyst
 
@@ -91,29 +91,42 @@ Read its hand-off; if it reports a partial or total failure, note that as a non-
 
 Before entering the loop below, scan every `pending` row's `Repo` value in `epic-manifest.md`. If more than one distinct value appears, stop here and surface this to the human explicitly: every execution dispatch from 5b through Step 8 operates on a single checked-out repo per session, so a multi-repo epic needs a separate `/sdlc` session per distinct `Repo` value — do not enter the loop until the human has decided how to proceed.
 
-For each `pending` row in `epic-manifest.md`, in row order (respecting `Depends-on`) — each row is exactly one story:
+Step 5 has two parts: **5a writes every story in the batch up front and gates them all together before any implementation starts**; **5b–5e then implement one story at a time**, same as before.
 
-Before 5a begins, create a dedicated branch for this story off the session's base branch: `git checkout -b story-{n.m}-work`. Every dispatch for this story (5a's Coder squad through 5e's gate) operates on this branch. This is the default for every story, single-epic or multi-epic alike.
+### 5a — Scrum Master (batch) + batch gate
 
-If this session is additionally working multiple epics that could touch overlapping files (per Global Constraints' workspace-isolation rule), create an isolated `git worktree` for this epic in the target repo now too, before the first story's branch is created — e.g. `git worktree add ../epic-{n} -b epic-{n}-work` — and create each story's `story-{n.m}-work` branch inside that worktree rather than the main checkout. A single-epic session skips this; the per-story branch above still applies. Track each story's own QA-loop and Review-loop round counters here too — both reset to 0 at the start of every new story, per the Loop cap & escalation rule in Global Constraints.
+Determine this batch's rows: by default, every `pending` row in `epic-manifest.md`, in manifest order. If the human named a subset when starting this epic (e.g. "só as stories 1.1 a 1.3"), use that subset instead — respecting `Depends-on` still applies within it.
 
-**5a — Scrum Master**
+Dispatch one `sdlc-scrum-master` call per row in the batch, in parallel (they write disjoint files, no shared state):
 
 ```
 
+parallel, one per batch row:
 Agent(subagent_type: "sdlc-scrum-master", prompt: "Epic manifest row: {row}. Epic Summary: {this row's containing Epic Summary block from docs/sdlc/epic-manifest.md — Goal/Boundaries/Key decisions/Definition of Done — full-mode sessions only, omit this clause in light mode}. PRD story {n.m}: {this story's ID/Title/Description/ACs/Priority excerpt from docs/sdlc/PRD.md — full-mode sessions only, omit this clause in light mode}. Architecture: docs/sdlc/architecture.md. Write the story file at docs/sdlc/epics/epic-{n}/stories/story-{n.m}.md.")
 
 ```
 
-If this session opted into GitHub issue creation during Intake, dispatch `sdlc-github-issue` now, once for this story, right after this story's Scrum Master dispatch:
+Once every row in the batch has its story file written, read all of them back and present the full batch to the human together (not one at a time). Do not dispatch `sdlc-github-issue` yet — a story file can still be sent back for rework at this gate, and an Issue is never edited once created, so Issue creation happens only after a row has cleared the gate below.
+
+**[GATE 4]** — batch validation, before any implementation. The human reviews every story in the batch and may approve all, approve a subset (the rest stay `pending`, revisited in a later batch or edited first), or send one or more back to Scrum Master for rework (re-dispatch 5a for just that row, then re-present it before re-gating). Never auto-advance past this gate.
+
+If this session opted into GitHub issue creation during Intake, dispatch `sdlc-github-issue` now — once per epic touched by this batch, passed the exact list of this epic's approved story files from this gate (never the rest of the directory, and never a row still pending rework):
 
 ```
 
-Agent(subagent_type: "sdlc-github-issue", prompt: "Epic {n} story directory: docs/sdlc/epics/epic-{n}/stories/. Target repo: {this row's manifest Repo value}. Board: {session board owner}/{session board number}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Create issues per your contract.")
+Agent(subagent_type: "sdlc-github-issue", prompt: "Story files: {list of this epic's approved story file paths from this gate}. Epic number: {n}. Target repo: {this row's manifest Repo value}. Board: {session board owner}/{session board number}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Create issues per your contract.")
 
 ```
 
-`sdlc-github-issue` dedups per-story via each story file's own `**GitHub Issue**:` marker line, so calling it once per story against the same epic directory is safe — it only ever creates the one new Issue for the story just written. Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
+`sdlc-github-issue` dedups per-story via each story file's own `**GitHub Issue**:` marker line, so re-dispatching it for a later batch in the same epic is safe — it only ever creates Issues for files in the list that don't already have one. Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
+
+Only rows the human approves at this gate proceed to 5b–5e below, in manifest order (respecting `Depends-on`).
+
+For each approved row, in order — each row is exactly one story:
+
+Before 5b begins, create a dedicated branch for this story off the session's base branch: `git checkout -b story-{n.m}-work`. Every dispatch for this story (5b's Coder squad through 5e's gate) operates on this branch. This is the default for every story, single-epic or multi-epic alike.
+
+If this session is additionally working multiple epics that could touch overlapping files (per Global Constraints' workspace-isolation rule), create an isolated `git worktree` for this epic in the target repo now too, before the first approved story's branch is created — e.g. `git worktree add ../epic-{n} -b epic-{n}-work` — and create each story's `story-{n.m}-work` branch inside that worktree rather than the main checkout. A single-epic session skips this; the per-story branch above still applies. Track each story's own QA-loop and Review-loop round counters here too — both reset to 0 at the start of every new story, per the Loop cap & escalation rule in Global Constraints.
 
 **5b — Coder squad** (per story; tier overlay chosen from the row's `Tier` column — `backend`→`sdlc-coder-backend`, `frontend`→`sdlc-coder-frontend`, `fullstack`→ dispatch both overlays' guidance in one prompt alongside the core)
 
@@ -125,7 +138,7 @@ Agent(subagent_type: "sdlc-coder", model: "opus" (only if this row's Complexity 
 
 ```
 
-Note: Claude Code loads exactly one `subagent_type` per `Agent` call — for a `fullstack`-tier story, dispatch `sdlc-coder` with both overlay files' content concatenated into the prompt (read them with `Read` first), since the overlays are prose guidance, not separate runtime agents that can be composed automatically. Every Coder-squad, Tuner, and gate-merge action for this story happens on its `story-{n.m}-work` branch (see the note before 5a) — dispatch prompts should state that branch so the sub-agent operates there, never on the base branch. If this epic also has an isolated worktree for the multi-epic-concurrency case, that branch lives inside the worktree; state the worktree path too so the sub-agent operates there, not on the main checkout.
+Note: Claude Code loads exactly one `subagent_type` per `Agent` call — for a `fullstack`-tier story, dispatch `sdlc-coder` with both overlay files' content concatenated into the prompt (read them with `Read` first), since the overlays are prose guidance, not separate runtime agents that can be composed automatically. Every Coder-squad, Tuner, and gate-merge action for this story happens on its `story-{n.m}-work` branch (see the note before 5b) — dispatch prompts should state that branch so the sub-agent operates there, never on the base branch. If this epic also has an isolated worktree for the multi-epic-concurrency case, that branch lives inside the worktree; state the worktree path too so the sub-agent operates there, not on the main checkout.
 
 **5c — QA, with Tuner routing (round-capped at 3, this story's own QA counter)**
 
@@ -141,7 +154,7 @@ Read the signal from `qa.md`, and increment this story's QA-round counter each t
 - `NIT` or `MINOR`, round < 3 → `Agent(subagent_type: "sdlc-tuner", prompt: "Finding: {exact finding line from qa.md}. Branch: story-{n.m}-work — operate there, not on the base branch. Apply the fix per your contract.")`. Read the Tuner's hand-off: if it reports the escalation shape ("...reclassifying MAJOR, not applying as a Tuner fix."), treat this round's outcome as `MAJOR` directly and fall through to the `MAJOR` branch below instead of re-dispatching `sdlc-qa`. Otherwise, re-dispatch `sdlc-qa` on the same story (round + 1).
 - `NIT` or `MINOR`, round = 3 and still open → reclassify `MAJOR` (per Global Constraints' loop-cap rule) and fall through to the `MAJOR` branch below instead of dispatching `sdlc-tuner` again.
 - `MAJOR`, round < 3 → re-dispatch the Coder squad (5b) with the finding included in the prompt, then re-run 5c (round + 1).
-- `MAJOR`, round = 3 and still open, or `CRITICAL`/`BLOCKED` at any round → stop, escalate to the human with the finding, **[GATE]** (unscheduled — this is the "escalate" gate from design §3, distinct from the six numbered gates).
+- `MAJOR`, round = 3 and still open, or `CRITICAL`/`BLOCKED` at any round → stop, escalate to the human with the finding, **[GATE]** (unscheduled — this is the "escalate" gate from design §3, distinct from the seven numbered gates).
 
 **5d — Review + Stress in parallel, with Tuner routing on the worse of the two signals (round-capped at 3, this story's own Review/Stress counter — independent of 5c's QA counter)**
 
@@ -168,9 +181,9 @@ Agent(subagent_type: "sdlc-verdict", prompt: "Story {n.m}. Expected final rounds
 
 ```
 
-**[GATE 4]** — present the verdict to the human before merge. On confirmation, merge `story-{n.m}-work` into the session's base branch, then delete the branch. On rejection/rework, stay on `story-{n.m}-work` — no merge — and loop back to whichever step the human directs.
+**[GATE 5]** — present the verdict to the human before merge. On confirmation, merge `story-{n.m}-work` into the session's base branch, then delete the branch. On rejection/rework, stay on `story-{n.m}-work` — no merge — and loop back to whichever step the human directs.
 
-Update the manifest row's `Status` to `done` once the story's verdict gate clears and the merge lands; move to the next `pending` row.
+Update the manifest row's `Status` to `done` once the story's verdict gate clears and the merge lands; move to the next approved row.
 
 ## Step 6 — Security + Quality Gate (parallel, independent)
 
@@ -186,11 +199,11 @@ Any `CRITICAL` from Security, or `FAIL` overall from Quality Gate, stops the tru
 
 ## Step 7 — PR
 
-**[GATE 5]** — confirm with the human before dispatching:
+**[GATE 6]** — confirm with the human before dispatching:
 
 ```
 
-Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — docs/sdlc/security-review.md and docs/sdlc/quality-gate.md both clean. Gate 5 already confirmed — proceed without asking again. Open the PR per your contract.")
+Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — docs/sdlc/security-review.md and docs/sdlc/quality-gate.md both clean. Gate 6 already confirmed — proceed without asking again. Open the PR per your contract.")
 
 ```
 
@@ -198,11 +211,11 @@ Agent(subagent_type: "sdlc-pr", prompt: "Diff ready — docs/sdlc/security-revie
 
 Read `docs/sdlc/architecture.md`'s Deployment Topology section if the file exists — the IaC half of the dispatch below needs it (same pattern as `skills/sdlc-release/SKILL.md`'s step 2).
 
-**[GATE 6]** — confirm with the human before dispatching:
+**[GATE 7]** — confirm with the human before dispatching:
 
 ```
 
-Agent(subagent_type: "sdlc-devops", prompt: "Release half: current release branch state. Deployment Topology: {excerpt from architecture.md's Deployment Topology section, or 'not available — architecture.md not found' if it doesn't exist}. Generate any missing IaC first, then proceed with the release half. Gate 6 already confirmed — proceed without asking again. Write docs/sdlc/release.md and tag/publish per your contract.")
+Agent(subagent_type: "sdlc-devops", prompt: "Release half: current release branch state. Deployment Topology: {excerpt from architecture.md's Deployment Topology section, or 'not available — architecture.md not found' if it doesn't exist}. Generate any missing IaC first, then proceed with the release half. Gate 7 already confirmed — proceed without asking again. Write docs/sdlc/release.md and tag/publish per your contract.")
 
 ```
 

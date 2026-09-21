@@ -25,11 +25,11 @@ Agent(subagent_type: "sdlc-architect", prompt: "Task: {task description}. Light 
 
 → **[GATE]**.
 
-2. Single-story loop (same shape as `/sdlc`'s story-loop step 5, run exactly once) → **[GATE]** before merge.
+2. Single-story loop (same shape as `/sdlc`'s story-loop step 5, run exactly once): Scrum Master writes the story → **[GATE]** validating it before any implementation → Coder squad → QA/Review/Stress with Tuner routing → Verdict → **[GATE]** before merge.
 3. Continue at `/sdlc`'s step 6 (Security Review onward).
 
 **Done when**: the single story's `verdict.md` clears its gate and the trunk's remaining steps have been handed off to.
 
 ## References
 
-- `references/loop.md` — the single-story loop written out in full (Coder → QA with Tuner routing → Review+Stress with Tuner routing → Verdict → gate).
+- `references/loop.md` — the single-story loop written out in full (Scrum Master → story gate → Coder → QA with Tuner routing → Review+Stress with Tuner routing → Verdict → merge gate).
