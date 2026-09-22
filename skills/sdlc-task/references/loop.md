@@ -28,14 +28,14 @@ Agent(subagent_type: "sdlc-coder", model: "opus" (only if Complexity is very-com
 
 Same signal routing as `/sdlc` step 5c: `APPROVE` → 4; `NIT`/`MINOR` → `sdlc-tuner` then re-run; `MAJOR` → back to 2; `CRITICAL`/`BLOCKED` → escalate, **[GATE]**.
 
-## 4 — Review + Stress in parallel, Tuner routing on the worse of the two signals
+## 4 — Review (+ Stress, unless this task's Complexity is `simple`), Tuner routing on the worse of the signal(s)
 
-Same signal routing as `/sdlc` step 5d.
+Same skip rule and signal routing as `/sdlc` step 5d: if the task-manifest row's `Complexity` is `simple`, dispatch `sdlc-reviewer` alone (no `sdlc-stress`, every round); otherwise dispatch both in parallel as before.
 
 ## 5 — Verdict
 
 ```
-Agent(subagent_type: "sdlc-verdict", prompt: "Story 1.1. Aggregate docs/sdlc/epics/epic-1/story-1.1/{qa,review,stress}.md.")
+Agent(subagent_type: "sdlc-verdict", prompt: "Story 1.1. Complexity: {task-manifest row's Complexity}. Aggregate docs/sdlc/epics/epic-1/story-1.1/{qa,review}.md{ and stress.md, unless Complexity is simple}.")
 ```
 
 **[GATE]** before merge — same as `/sdlc`'s gate 5, unnumbered here since `/sdlc-task` only ever has one story. On confirmation, merge `story-1.1-work` into the base branch and delete it; on rejection/rework, stay on the branch — no merge.

@@ -34,7 +34,17 @@ Agent(subagent_type: "sdlc-qa", prompt: "Bug fix for '{slug}', just implemented.
 
 Routing identical to the `/sdlc` skill's step 5c (`references/phases.md` in the `sdlc` skill) — reuse that logic, this file doesn't repeat it.
 
-## Step 4 — Review + Stress in parallel
+## Step 4 — Review (+ Stress in parallel, unless this bug's Complexity is `simple`)
+
+If this bug's `Complexity` (from Step 1's hand-off/`investigation.md`) is `simple`, dispatch `sdlc-reviewer` alone — no `sdlc-stress`:
+
+```
+
+Agent(subagent_type: "sdlc-reviewer", prompt: "Bug fix for '{slug}'. Branch: bugfix-{slug}-work — review the code there, not the base branch. Review per your contract. Write docs/sdlc/bugs/{slug}/review.md.")
+
+```
+
+Otherwise (`complex`/`very-complex`), dispatch both in parallel as before:
 
 ```
 
@@ -44,7 +54,7 @@ Agent(subagent_type: "sdlc-stress", prompt: "Bug fix for '{slug}'. Branch: bugfi
 
 ```
 
-Routing identical to the `/sdlc` skill's step 5d — worse of the two signals — reuse that logic, this file doesn't repeat it.
+Routing identical to the `/sdlc` skill's step 5d — worse of whichever signal(s) ran — reuse that logic, this file doesn't repeat it.
 
 ## Tuner dispatch (used by steps 3 and 4's NIT/MINOR routing)
 
@@ -60,7 +70,7 @@ When to dispatch this and what to re-run afterward is identical to the `/sdlc` s
 
 ```
 
-Agent(subagent_type: "sdlc-verdict", prompt: "Bug fix for '{slug}'. Aggregate docs/sdlc/bugs/{slug}/{qa,review,stress}.md per your contract.")
+Agent(subagent_type: "sdlc-verdict", prompt: "Bug fix for '{slug}'. Complexity: {from investigation.md}. Aggregate docs/sdlc/bugs/{slug}/{qa,review}.md{ and stress.md, unless Complexity is simple} per your contract.")
 
 ```
 

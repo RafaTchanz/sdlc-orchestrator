@@ -26,7 +26,7 @@ Full phase-by-phase dispatch prompts and routing logic: `references/phases.md`. 
    - For each approved row, in manifest order (each row is exactly one story):
      - b. Create the dedicated `story-{n.m}-work` branch, then Coder squad (`sdlc-coder` + tier overlay) → TDD implementation there.
      - c. `sdlc-qa` → route on signal (`APPROVE` → d; `NIT`/`MINOR` → `sdlc-tuner` then re-run `sdlc-qa`; `MAJOR` → back to (b); `CRITICAL`/`BLOCKED` → escalate, **[GATE]**).
-     - d. `sdlc-reviewer` + `sdlc-stress` in parallel → route on the worse of the two signals (`APPROVE`/clean on both → e; `NIT`/`MINOR`-only on the worse → `sdlc-tuner` then re-run both; `MAJOR`/`CRITICAL` on either → back to (b)).
+     - d. `sdlc-reviewer` + `sdlc-stress` in parallel — unless this row's `Complexity` is `simple`, in which case skip `sdlc-stress` and dispatch `sdlc-reviewer` alone every round → route on the worse of whichever signal(s) ran (`APPROVE`/clean → e; `NIT`/`MINOR`-only on the worse → `sdlc-tuner` then re-run; `MAJOR`/`CRITICAL` on either → back to (b)).
      - e. `sdlc-verdict` → **[GATE 5]** before merge — on confirmation, merge `story-{n.m}-work` into the base branch and delete it.
 6. Dispatch `sdlc-security` and `sdlc-quality-gate` over the full diff (can run in parallel — independent, read-only, no shared state).
 7. **[GATE 6]** → dispatch `sdlc-pr` to open the PR.

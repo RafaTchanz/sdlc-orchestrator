@@ -8,7 +8,7 @@ description: Runs a single small task or feature through the same TDD/QA/Review/
 ## Contract
 
 - **Input**: a single small task/feature description — ask if not provided.
-- **Output**: `docs/sdlc/task-manifest.md` plus one story's worth of `qa.md`/`review.md`/`stress.md`/`verdict.md`; then rejoins the common trunk.
+- **Output**: `docs/sdlc/task-manifest.md` plus one story's worth of `qa.md`/`review.md`/`verdict.md` — plus `stress.md` unless the task's `Complexity` is `simple`; then rejoins the common trunk.
 - **Boundary**: skips Brief/PRD entirely. The Architect runs in light mode — `task-manifest.md` only, no full `architecture.md` sections. Never auto-advances past a `[GATE]`.
 
 ## Steps
@@ -25,7 +25,7 @@ Agent(subagent_type: "sdlc-architect", prompt: "Task: {task description}. Light 
 
 → **[GATE]**.
 
-2. Single-story loop (same shape as `/sdlc`'s story-loop step 5, run exactly once): Scrum Master writes the story → **[GATE]** validating it before any implementation → Coder squad → QA/Review/Stress with Tuner routing → Verdict → **[GATE]** before merge.
+2. Single-story loop (same shape as `/sdlc`'s story-loop step 5, run exactly once): Scrum Master writes the story → **[GATE]** validating it before any implementation → Coder squad → QA/Review(+Stress, unless Complexity is `simple`) with Tuner routing → Verdict → **[GATE]** before merge.
 3. Continue at `/sdlc`'s step 6 (Security Review onward).
 
 **Done when**: the single story's `verdict.md` clears its gate and the trunk's remaining steps have been handed off to.

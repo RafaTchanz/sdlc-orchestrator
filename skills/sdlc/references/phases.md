@@ -156,7 +156,17 @@ Read the signal from `qa.md`, and increment this story's QA-round counter each t
 - `MAJOR`, round < 3 → re-dispatch the Coder squad (5b) with the finding included in the prompt, then re-run 5c (round + 1).
 - `MAJOR`, round = 3 and still open, or `CRITICAL`/`BLOCKED` at any round → stop, escalate to the human with the finding, **[GATE]** (unscheduled — this is the "escalate" gate from design §3, distinct from the seven numbered gates).
 
-**5d — Review + Stress in parallel, with Tuner routing on the worse of the two signals (round-capped at 3, this story's own Review/Stress counter — independent of 5c's QA counter)**
+**5d — Review (+ Stress, unless this row's Complexity is `simple`), with Tuner routing on the worse of the signal(s) (round-capped at 3, this story's own Review/Stress counter — independent of 5c's QA counter)**
+
+If this row's `Complexity` is `simple`, skip `sdlc-stress` entirely for this story — every round, not just the first — and dispatch `sdlc-reviewer` alone:
+
+```
+
+Agent(subagent_type: "sdlc-reviewer", prompt: "Story {n.m}. Branch: story-{n.m}-work — review the code there, not the base branch. Round {n} of 3. Review per your contract. Write docs/sdlc/epics/epic-{n}/story-{n.m}/review.md.")
+
+```
+
+Otherwise (`complex`/`very-complex`), dispatch both in parallel as before:
 
 ```
 
@@ -166,18 +176,18 @@ Agent(subagent_type: "sdlc-stress", prompt: "Story {n.m}. Branch: story-{n.m}-wo
 
 ```
 
-Read both Review's and Stress's signals and take the worse of the two (`CRITICAL`/`BLOCKED` > `MAJOR` > `MINOR`/`NIT` > `APPROVE`), incrementing this story's Review/Stress-round counter each time this step runs after round 1:
+Read Review's signal (and Stress's, when dispatched) and take the worse of however many ran (`CRITICAL`/`BLOCKED` > `MAJOR` > `MINOR`/`NIT` > `APPROVE`; with Stress skipped, this is just Review's own signal), incrementing this story's Review/Stress-round counter each time this step runs after round 1:
 
-- Worse-of-the-two is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in either report), dispatch `sdlc-tuner` on each (with the finding included in the prompt, same branch clause as 5c's Tuner dispatch). Read each Tuner's hand-off: if any reports the escalation shape ("...reclassifying MAJOR, not applying as a Tuner fix."), treat this round's outcome as `MAJOR` directly and fall through to the `MAJOR`/`CRITICAL` branch below instead of re-running Review/Stress. Otherwise, re-run **both** `sdlc-reviewer` and `sdlc-stress` (round + 1).
-- Worse-of-the-two is `NIT`/`MINOR` only, round = 3 and still open → reclassify `MAJOR` and fall through to the branch below instead of dispatching `sdlc-tuner` again.
-- Worse-of-the-two is `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b) with the finding included in the prompt, then re-run 5c and 5d from the top for this story (round + 1).
-- Worse-of-the-two is `MAJOR`/`CRITICAL`, round = 3 and still open → reclassify `CRITICAL`/`BLOCKED` (if not already) and stop, escalate to the human, **[GATE]** (unscheduled — same escalation gate as 5c's).
+- Worse-of-the-ran-signals is `APPROVE`, or `NIT`/`MINOR` only, round < 3 → if any `NIT`/`MINOR` present (in whichever report(s) ran), dispatch `sdlc-tuner` on each (with the finding included in the prompt, same branch clause as 5c's Tuner dispatch). Read each Tuner's hand-off: if any reports the escalation shape ("...reclassifying MAJOR, not applying as a Tuner fix."), treat this round's outcome as `MAJOR` directly and fall through to the `MAJOR`/`CRITICAL` branch below instead of re-running Review(+Stress). Otherwise, re-run Review (and Stress, if this story isn't `simple`) (round + 1).
+- Worse-of-the-ran-signals is `NIT`/`MINOR` only, round = 3 and still open → reclassify `MAJOR` and fall through to the branch below instead of dispatching `sdlc-tuner` again.
+- Worse-of-the-ran-signals is `MAJOR`/`CRITICAL`, round < 3 → back to the Coder squad (5b) with the finding included in the prompt, then re-run 5c and 5d from the top for this story (round + 1).
+- Worse-of-the-ran-signals is `MAJOR`/`CRITICAL`, round = 3 and still open → reclassify `CRITICAL`/`BLOCKED` (if not already) and stop, escalate to the human, **[GATE]** (unscheduled — same escalation gate as 5c's).
 
 **5e — Verdict**
 
 ```
 
-Agent(subagent_type: "sdlc-verdict", prompt: "Story {n.m}. Expected final rounds — QA: {this story's final QA round}/3, Review: {this story's final Review/Stress round}/3, Stress: {same Review/Stress round}/3 (Review and Stress share one counter). Aggregate docs/sdlc/epics/epic-{n}/story-{n.m}/{qa,review,stress}.md per your contract.")
+Agent(subagent_type: "sdlc-verdict", prompt: "Story {n.m}. Complexity: {row's Complexity}. Expected final rounds — QA: {this story's final QA round}/3, Review: {this story's final Review/Stress round}/3, Stress: {'N/A — skipped, Complexity: simple' if this row's Complexity is simple, else the same Review/Stress round} (Review and Stress share one counter when both run). Aggregate docs/sdlc/epics/epic-{n}/story-{n.m}/{qa,review}.md{ and stress.md, unless Complexity is simple} per your contract.")
 
 ```
 
