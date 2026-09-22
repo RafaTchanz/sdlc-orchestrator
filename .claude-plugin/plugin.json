@@ -1,7 +1,7 @@
 {
   "name": "sdlc-orchestrator",
   "description": "21-agent SDLC pipeline for Claude Code — Analyst -> PM -> Architect -> Scrum Master -> Coder -> QA -> Reviewer -> Stress -> Tuner -> Verdict -> PR -> DevOps, plus a bug-fix flow, a single-task flow, and standalone security-review/quality-gate/pr-review/release/grill-me/handoff/write-task skills. Self-contained, no runtime dependency on any other plugin.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Rafa Lorente"
   },
