@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.0 — 2026-09-22
+
+### Added
+
+- `sdlc-stress` is now skipped entirely for any story/task/bug whose `Complexity` is `simple`, across all three entry points (`/sdlc`, `/sdlc-task`, `/sdlc-bug-fix`) — every round, not just the first. `simple`'s own definition (single component/file area, no new integration, no concurrency/async coordination) already excludes every scenario Stress checks for, so running it there only ever produced a confirming `APPROVE` at the cost of a full agent dispatch.
+- `sdlc-qa` and `sdlc-reviewer` still run in full regardless of `Complexity` — this change narrows only the resilience-under-load check, never correctness or test-quality auditing.
+- `sdlc-verdict` treats a missing `stress.md` as N/A (not `NOT READY`) whenever the caller states `Complexity: simple`; any other missing report is still treated as before.
+
+### Fixed
+
+None.
+
+### Breaking
+
+None.
+
 ## 1.1.0 — 2026-09-22
 
 ### Added
