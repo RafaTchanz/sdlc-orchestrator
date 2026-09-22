@@ -9,7 +9,7 @@ description: Generates missing infrastructure-as-code artifacts and cuts a relea
 
 - **Input**: the current state of the release branch.
 - **Output**: `docs/sdlc/release.md` (changelog, version-bump rationale) plus any missing IaC/CI artifacts (Dockerfile, compose, CI config).
-- **Boundary**: never tags/publishes without explicit user confirmation asked directly in this standalone context (unlike the trunk call, where `/sdlc`'s own gate 6 already covers it).
+- **Boundary**: never tags/publishes without explicit user confirmation asked directly in this standalone context (unlike the trunk call, where `/sdlc`'s own gate 7 already covers it).
 
 ## Steps
 

@@ -9,7 +9,7 @@ description: Summarizes a diff, drafts a PR description, and opens the PR (or re
 
 - **Input**: a branch/diff ready for review, or an existing open PR number — ask if ambiguous.
 - **Output**: `pr-review.md`, plus the PR title/description when creating one.
-- **Boundary**: never merges; never pushes/opens a PR without explicit user confirmation asked directly in this standalone context (unlike the trunk call, where `/sdlc`'s own gate 5 already covers it).
+- **Boundary**: never merges; never pushes/opens a PR without explicit user confirmation asked directly in this standalone context (unlike the trunk call, where `/sdlc`'s own gate 6 already covers it).
 
 ## Steps
 
