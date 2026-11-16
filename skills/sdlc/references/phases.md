@@ -8,6 +8,7 @@ Resuming mid-pipeline (e.g. after a context compaction or a new session reading 
 
 | Step | Section                                                                         | Dispatches                                                                                                                                                   | Gate                                                                                                    |
 | ---- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| 1a   | [Board planner](#step-1a--board-planner)                                        | `sdlc-board-planner` (only if opted into GitHub issues)                                                                                                      | — (asks the human only about ambiguous/not-found refs)                                                  |
 | 2    | [Analyst](#step-2--analyst)                                                     | `sdlc-analyst` (+ `sdlc-slack-notify` if opted in)                                                                                                           | GATE 1                                                                                                  |
 | 3    | [PM](#step-3--pm)                                                               | `sdlc-pm` (+ `sdlc-slack-notify` if opted in)                                                                                                                | GATE 2                                                                                                  |
 | 4    | [Architect + grill-me](#step-4--architect--grill-me)                            | `sdlc-architect`, `/sdlc-grill-me` (+ `sdlc-slack-notify` if opted in)                                                                                       | GATE 3                                                                                                  |
@@ -16,6 +17,31 @@ Resuming mid-pipeline (e.g. after a context compaction or a new session reading 
 | 7    | [PR](#step-7--pr)                                                               | `sdlc-pr`                                                                                                                                                    | GATE 6                                                                                                  |
 | 8    | [Release](#step-8--release)                                                     | `sdlc-devops`                                                                                                                                                | GATE 7                                                                                                  |
 | 9    | [Handoff](#step-9--handoff)                                                     | `sdlc-handoff`                                                                                                                                               | —                                                                                                       |
+
+## Step 1a — Board planner
+
+Only when this session opted into GitHub issue creation at Intake. Runs after the Intake questions and before Step 2, on fresh start and on resume alike (it is idempotent: it only creates an Épico a roadmap asks for that doesn't exist yet, and only fills empty fields).
+
+```
+
+Agent(subagent_type: "sdlc-board-planner", prompt: "Board: {session board owner}/{session board number}. Tribe repo: {session tribe_repo, if given}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Iniciativa: {session iniciativa, if given}. Épicos: {session épicos, if given}. Roadmap: {session roadmap — text or file path — if given}. Resolve and link per your contract.")
+
+```
+
+Omit every clause whose value wasn't given (not an empty clause) — never ask for the tribe repo before dispatching: the planner takes it from the resolved Iniciativa when it is missing, and simply creates nothing without one. Then act on its hand-off:
+
+- `MODELO AUSENTE` → set `board_model = off` for the session: every later `sdlc-github-issue` dispatch is sent exactly as before this feature (no `Origem`/`Status`/`Parent epic`). Skip the rest of this step.
+- Otherwise set `board_model = on`; record the resolved `Iniciativa: {owner/repo}#{n}` as `iniciativa_ref`, and every resolved `Épico "{quote}": {owner/repo}#{n}` line in `epic_map` (quote → `owner/repo#N`).
+- Collect every line that needs the human and ask about all of them in **one** message:
+  - `AMBÍGUA`/`AMBÍGUO` → list its candidates (_"Achei mais de um épico para “{quote}”: {owner/repo}#{a} {título}, {owner/repo}#{b} {título}. Qual é?"_).
+  - `SEM CORRESPONDÊNCIA` (a roadmap entry the planner refused to create because unmatched épicos already exist under the iniciativa) → _"“{quote}” é um destes — {owner/repo}#{a} {título}, … — ou um épico novo?"_.
+  - `NÃO CLASSIFICADA`/`NÃO CLASSIFICADO` (the issue exists but has no `Nível` on the board) → _"{owner/repo}#{n} {título} é mesmo a iniciativa/o épico “{quote}”?"_.
+  - `NÃO ENCONTRADA`/`NÃO ENCONTRADO`/`NÃO É INICIATIVA`/`NÃO É ÉPICO` → ask for the right number or link, accepting "nenhum".
+  - `NÃO CRIADO ({motivo})` is not a question by itself: it resolves once the line it depends on (usually the Iniciativa) is answered.
+- If anything was asked, re-dispatch `sdlc-board-planner` with the same prompt, changed only by the answers: a settled Iniciativa/Épico ref becomes the chosen `owner/repo#N`; a settled roadmap entry gets its pin appended (`{entry} = owner/repo#N`, duration kept); refs answered "nenhum" are dropped; entries the human called new go in `Criar épicos: {quote}; {quote}.`; confirmed `NÃO CLASSIFICADO(A)` issues go in `Confirmados: owner/repo#N; ….`. Merge its result into `iniciativa_ref`/`epic_map`. The re-dispatch may surface lines about refs that weren't asked about before (typically `SEM CORRESPONDÊNCIA` once the Iniciativa resolves): ask about those once and re-dispatch one last time. Never ask about the same ref twice, and never run more than three planner dispatches in this step — whatever is still unresolved stays unresolved.
+- A `Candidatos sob a iniciativa` line (no épico was asked for) → keep the candidates; they are offered at GATE 4 below.
+
+Never block on this step: a failed dispatch or an empty hand-off is a non-fatal warning with `board_model = off`.
 
 ## Step 2 — Analyst
 
@@ -71,6 +97,8 @@ Agent(subagent_type: "sdlc-architect", prompt: "Approved brief (docs/sdlc/produc
 
 ```
 
+If `epic_map` (Step 1a) holds more than one board Épico, insert `Board épicos already planned for this delivery (align epic boundaries to them where the PRD allows, and say in each Epic Summary which one it maps to): {names from epic_map, in order}.` before `Write docs/sdlc/architecture.md` — otherwise omit it.
+
 Then invoke the `sdlc-grill-me` skill against `docs/sdlc/architecture.md` before the gate.
 
 If this session opted into Slack notifications during Intake, dispatch `sdlc-slack-notify` now, after `grill-me` has resolved:
@@ -117,6 +145,8 @@ If this session opted into GitHub issue creation during Intake, dispatch `sdlc-g
 Agent(subagent_type: "sdlc-github-issue", prompt: "Story files: {list of this epic's approved story file paths from this gate}. Epic number: {n}. Target repo: {this row's manifest Repo value}. Board: {session board owner}/{session board number}. Tribo: {session tribo}. Squad: {session squad}. Project: {session project_name, if given}. Create issues per your contract.")
 
 ```
+
+When `board_model` is on (Step 1a), insert `Origem: Upstream. Status: Ready to dev. Parent epic: {this epic's board Épico, owner/repo#N}.` before `Create issues per your contract.` — the stories were just refined and approved at this gate, hence `Ready to dev`. Pick each epic's board Épico at GATE 4 itself, in the same message that presents the batch. An epic already in `epic_map` under its own key (`epic-{n}`, from an earlier batch) keeps that Épico without asking again. Otherwise: if `epic_map` has exactly one Épico, propose it for every epic; if it has several, propose for each epic the one its Epic Summary names (or whose name best matches the epic's title); if it has none, offer Step 1a's `Candidatos sob a iniciativa`, or ask for a number or link. The human confirms or corrects these together with the batch. When the human names an Épico that isn't in `epic_map` — a number/link, or a new épico given as a name and a duration — dispatch `sdlc-board-planner` once with the Step 1a prompt reduced to `Board`, `Tribe repo`, `Tribo`, `Squad`, `Project`, `Iniciativa: {iniciativa_ref}`, and either `Épicos: {that ref}` or a one-entry `Roadmap: {name} - {duration}; começando em {date the human gave, else today}` plus `Criar épicos: {name}`. If its line comes back resolved, use it; if not, tell the human what it said and send this epic without `Parent epic:` — no further question in this gate. Store each epic's final choice in `epic_map` as `epic-{n}` → `owner/repo#N` (or `nenhum`). An epic left with no Épico ("nenhum") → omit `Parent epic:` for it but keep `Origem`/`Status`.
 
 `sdlc-github-issue` dedups per-story via each story file's own `**GitHub Issue**:` marker line, so re-dispatching it for a later batch in the same epic is safe — it only ever creates Issues for files in the list that don't already have one. Read its hand-off; if it reports a partial or total failure, note that as a non-fatal warning — never block 5b on its outcome. If the dispatch itself fails or returns no hand-off at all (e.g. the agent type isn't resolvable), treat that identically: log a non-fatal warning and continue to 5b.
 
