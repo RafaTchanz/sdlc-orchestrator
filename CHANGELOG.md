@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.0 — 2026-11-16
+
+### Added
+
+- New agent `sdlc-board-planner` (Oráculo): resolves the Iniciativa and Épicos a delivery belongs to on the squad's GitHub Project board — by number, link, part of the title, or `project_name` — and links each Épico under its Iniciativa. Given a roadmap (épicos with durations and a start date, as text or a document path), it also creates the Épicos that don't exist yet (`Nível = Épico`, `Origem = Upstream`, `Status = Ready to Refin`) and plans their dates in sequential working days (`Início dev`/`Fim dev`/`Entrega prod (plan.)`), plus the Iniciativa's. It never asks the human (it reports `AMBÍGUA`/`SEM CORRESPONDÊNCIA`/`NÃO CLASSIFICADO`… for the skill to ask), never creates an Iniciativa, never overwrites a field that already has a value, and creates an Épico only when the Iniciativa is resolved, every lookup succeeded and no existing Épico under it could be the same one (or the human confirmed it is new) — so a roadmap never duplicates épicos already on the board.
+- `/sdlc` Intake asks, inside the existing GitHub-issue question, for the tribe repo, Iniciativa, Épico(s) and an optional roadmap; a new **Step 1a** dispatches `sdlc-board-planner` before the Analyst and asks the human once about anything ambiguous. At GATE 4 each epic is mapped to its board Épico together with the batch approval, and the architect is told the planned Épicos so epic boundaries can line up with them.
+- `sdlc-github-issue` (Falcão) takes optional `Origem`, `Status` and `Parent epic`: each story is created with `Nível = História`, `Origem`, `Status` (`Ready to dev` after GATE 4) and as a sub-issue of its Épico. `/sdlc-write-task` resolves its task's Épico through `sdlc-board-planner` and does the same for its single Issue.
+- Fully backward compatible: on a board without a `Nível` field (`MODELO AUSENTE`), every dispatch is sent exactly as in 1.2.0.
+
+### Fixed
+
+- `sdlc-github-issue`: adding a new `Projeto` option now explicitly re-sends every existing option with its `id`. Sent without it, `updateProjectV2Field` recreates the options and every card on the board loses its `Projeto` value.
+
+### Breaking
+
+None.
+
 ## 1.2.0 — 2026-09-22
 
 ### Added
